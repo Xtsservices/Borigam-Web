@@ -1,16 +1,64 @@
-import React from "react";
-import { Form, Input, Button, Row, Col, Typography } from "antd";
+import React, { useState } from "react";
+import { Form, Input, Button, Row, Col, Typography, message } from "antd";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import "./styles/signin.css";
 import borigam_profile from "../assets/borigam_profile.png";
 
 const { Title } = Typography;
 
-const Loginform = () => {
+const Login = () => {
   const [form] = Form.useForm();
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-  const handleFinish = (values: any) => {
-    console.log("Success:", values);
+  const handleFinish = async (values: {
+    username: string;
+    password: string;
+  }) => {
+    setLoading(true);
+    try {
+      let payload = {
+        email: values.username,
+        password: values.password,
+      };
+
+      const response = await axios.post(
+        "http://localhost:3001/api/users/login",
+        payload
+      );
+
+      if (response.data.token) {
+        // Store token in localStorage
+        localStorage.setItem("token", response.data.token);
+
+        // Optional: Store user data if available
+        if (response.data.user) {
+          localStorage.setItem("userData", JSON.stringify(response.data.user));
+        }
+
+        message.success("Login successful!");
+        if (
+          values.username === "samu@gmail.com" &&
+          values.password === "123456"
+        ) {
+          navigate("/student/dashboard");
+          return; 
+        }
+
+        navigate("/dashboard");
+      } else {
+        throw new Error("No token received");
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      message.error(
+        "Login failed. Please check your credentials and try again."
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -22,37 +70,45 @@ const Loginform = () => {
 
       {/* Right Panel */}
       <div className="rightpanel">
-        <Title level={3} className="login-title">LOGIN</Title>
+        <Title level={3} className="login-title">
+          LOGIN
+        </Title>
         <hr className="title-underline" />
 
         <Form form={form} layout="vertical" onFinish={handleFinish}>
-          {/* Username Input */}
-          <Form.Item 
-            name="username" 
-            rules={[{ required: true, message: "Please enter your mobile number or email!" }]}
+          {/* Username/Email Input */}
+          <Form.Item
+            name="username"
+            rules={[
+              { required: true, message: "Please enter your email!" },
+              { type: "email", message: "Please enter a valid email!" },
+            ]}
           >
-            <Input 
-              prefix={<UserOutlined />} 
-              placeholder="Enter your Mobile number or email id" 
-              size="large" 
+            <Input
+              prefix={<UserOutlined />}
+              placeholder="Enter your email"
+              size="large"
             />
           </Form.Item>
 
           {/* Password Input */}
-          <Form.Item 
-            name="password" 
-            rules={[{ required: true, message: "Please enter your password!" }]}
+          <Form.Item
+            name="password"
+            rules={[
+              { required: true, message: "Please enter your password!" },
+              { min: 6, message: "Password must be at least 6 characters!" },
+            ]}
           >
-            <Input.Password 
-              prefix={<LockOutlined />} 
-              placeholder="Enter your Password" 
-              size="large" 
+            <Input.Password
+              prefix={<LockOutlined />}
+              placeholder="Enter your Password"
+              size="large"
             />
           </Form.Item>
 
           {/* Sign In Button */}
           <Form.Item>
-            <Button type="primary" htmlType="submit" block>
+            <Button type="primary" htmlType="submit" block loading={loading}>
               Sign In
             </Button>
           </Form.Item>
@@ -61,10 +117,17 @@ const Loginform = () => {
         {/* Footer Links */}
         <Row justify="space-between" className="signin-footer">
           <Col>
-            <Typography.Text className="forgot">Forgot Password</Typography.Text>
+            <Typography.Link className="forgot">
+              Forgot Password
+            </Typography.Link>
           </Col>
           <Col>
-            <Typography.Text className="signup_text">Signup</Typography.Text>
+            <Typography.Link
+              className="signup_text"
+              onClick={() => navigate("signup")}
+            >
+              Signup
+            </Typography.Link>
           </Col>
         </Row>
       </div>
@@ -72,4 +135,4 @@ const Loginform = () => {
   );
 };
 
-export default Loginform;
+export default Login;

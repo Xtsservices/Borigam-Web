@@ -10,7 +10,7 @@ interface AppHeaderProps {
   metaInfo?: string;
 }
 
-const AppHeader = ({ title, subtitle = "INSTITUTION" }: AppHeaderProps) => {
+const StudentAppHeader = ({ title, subtitle = "INSTITUTION" }: AppHeaderProps) => {
   return (
     <Header style={{ 
       background: '#C6A2D4', 
@@ -31,4 +31,4 @@ const AppHeader = ({ title, subtitle = "INSTITUTION" }: AppHeaderProps) => {
   );
 };
 
-export default AppHeader;
+export default StudentAppHeader;

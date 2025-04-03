@@ -10,7 +10,7 @@ import { useState } from "react";
 
 const { Sider } = Layout;
 
-const AppSidebar = () => {
+const StudentAppSidebar = () => {
   const navigate = useNavigate();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -31,7 +31,6 @@ const AppSidebar = () => {
 
   const handleOnClick = () => {
     console.log("123456")
-    navigate("/settings");
   };
 
 
@@ -55,7 +54,7 @@ const AppSidebar = () => {
             icon: (
               <HomeOutlined
                 style={{ fontSize: "30px" }}
-                onClick={() => navigate("/dashboard")}
+                onClick={() => navigate("/student/dashboard")}
               />
             ),
             style: {
@@ -112,4 +111,4 @@ const AppSidebar = () => {
   );
 };
 
-export default AppSidebar;
+export default StudentAppSidebar;

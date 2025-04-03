@@ -1,53 +1,266 @@
-import { Card, Button, Typography } from "antd";
+import {
+  JSXElementConstructor,
+  ReactElement,
+  ReactNode,
+  ReactPortal,
+  useEffect,
+  useState,
+} from "react";
+import {
+  Card,
+  Button,
+  Typography,
+  Image,
+  Modal,
+  Input,
+  Form,
+  message,
+} from "antd";
 import LayoutWrapper from "../layouts/layoutWrapper";
 import { useNavigate } from "react-router-dom";
-import { courses } from "./types/course";
+import add_dashboard from "../assets/add_dashboard.png";
 
 const { Title } = Typography;
 
+// Define TypeScript Interface for Course
+interface Course {
+  id: number;
+  name: string;
+  status: string;
+}
+
+interface User {
+  userId: number;
+  firstname: string;
+  lastname: string;
+  email: string;
+  countrycode: string;
+  mobileno: string;
+  status: number;
+  role: string;
+}
+
+interface College {
+  collegeId: number;
+  collegeName: string;
+  collegeAddress: string;
+  collegeStatus: number;
+  users: User[];
+}
+
+interface Students {
+  mobileno: string;
+  email: string;
+  studentId: number;
+  firstname: string;
+  lastname: string;
+  role: string;
+  countrycode: string;
+  status: number;
+}
+
 const Dashboard = () => {
   const navigate = useNavigate();
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [colleges, setColleges] = useState<College[]>([]);
+  const [students, setStudents] = useState<Students[]>([]);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalVisible1, setModalVisible1] = useState(false);
+  const [form] = Form.useForm();
+  const [form1] = Form.useForm();
+
+  useEffect(() => {
+    const fetchCourses = async () => {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        console.error("No token found, authentication required");
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          "http://localhost:3001/api/course/getCourses",
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              token: token,
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data: Course[] = await response.json();
+        setCourses(data);
+      } catch (error) {
+        console.error("Error fetching courses:", error);
+      }
+    };
+    fetchColleges();
+    fetchCourses();
+    fetchStudents();
+  }, []);
+
+  const fetchColleges = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      console.error("No token found, authentication required");
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        "http://localhost:3001/api/college/viewAllCollegesAndUsers",
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            token: token,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      setColleges(result.data);
+    } catch (error) {
+      console.error("Error fetching colleges:", error);
+    }
+  };
+
+  const fetchStudents = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      console.error("No token found, authentication required");
+      return;
+    }
+    try {
+      const response = await fetch(
+        "http://localhost:3001/api/student/getAllStudents",
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            token: token,
+          },
+        }
+      );
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      const result = await response.json();
+      console.log("Fetched Students:", result);
+      setStudents(result.data || []);
+    } catch (error) {
+      console.error("Error fetching students:", error);
+    }
+  };
+
+  const handleCollegeSubmit = async (values: any) => {
+    try {
+      const response = await fetch(
+        "http://localhost:3001/api/college/registerCollege",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            token: localStorage.getItem("token") || "",
+          },
+          body: JSON.stringify(values),
+        }
+      );
+      if (!response.ok) {
+        throw new Error("Failed to register college");
+      }
+      alert("College registered successfully!");
+      setModalVisible(false);
+      form.resetFields();
+    } catch (error) {
+      console.error("Error registering college:", error);
+      message.error("Failed to register college");
+    }
+  };
+
+  const handleStudentSubmit = async (values: any) => {
+    try {
+      const response = await fetch(
+        "http://localhost:3001/api/student/createStudent",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            token: localStorage.getItem("token") || "",
+          },
+          body: JSON.stringify(values),
+        }
+      );
+      if (!response.ok) {
+        throw new Error("Failed to create student");
+      }
+      alert("Student created successfully!");
+      setModalVisible1(false);
+      form1.resetFields();
+    } catch (error) {
+      console.error("Error creating student:", error);
+      message.error("Failed to create student");
+    }
+  };
+
+  const handleCollegeClick = () => {
+    setModalVisible(true);
+  };
+
+  const handleStudentClick = () => {
+    setModalVisible1(true);
+  };
+
+  const navigateToColleges = () => {
+    navigate("/dashboard/CollageList");
+  };
+
+  const navigateToStudents = () => {
+    navigate("/dashboard/Enrolled");
+  };
 
   return (
     <LayoutWrapper pageTitle="BORIGAM">
-      {/* Welcome Card */}
-      <Card
-        style={{
-          width: "90%",
-          textAlign: "center",
-          background: "#FFD439",
-          fontSize: "24px",
-          fontWeight: "bold",
-          marginBottom: "20px",
-          borderRadius: "8px",
-        }}
-      >
-        WELCOME
-      </Card>
-
-      {/* Rest of your dashboard content */}
       <div
         style={{
           display: "flex",
+          justifyContent: "space-between",
           flexWrap: "wrap",
           gap: "20px",
           marginBottom: "20px",
-          justifyContent: "center",
-          width: "90%",
         }}
       >
-        {/* Courses Section */}
         <Card
           style={{
-            width: "300px",
+            width: "30%",
             borderRadius: "10px",
             borderColor: "#8B5EAB",
             boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
           }}
         >
-          <Title level={5} style={{ marginBottom: "16px" }}>
-            Courses:
-          </Title>
+          <Button
+            type="primary"
+            style={{
+              background: "#8B5EAB",
+              borderColor: "#8B5EAB",
+              width: "100%",
+              fontWeight: "bold",
+              marginBottom: "20px",
+            }}
+            onClick={handleStudentClick}
+          >
+            Students +
+          </Button>
           <div
             style={{
               display: "flex",
@@ -57,46 +270,41 @@ const Dashboard = () => {
               marginBottom: "16px",
             }}
           >
-            {courses.map((course) => (
-              <Button
-                key={course.id}
-                style={{
-                  width: "80px",
-                  height: "32px",
-                  fontSize: "12px",
-                  padding: "0",
-                }}
-                onClick={() => navigate(`/view-course/${course.id}`)}
-              >
-                {course.name}
-              </Button>
-            ))}
+            <Button
+              style={{ width: "180px", height: "80px", fontSize: "21px" }}
+              onClick={() => navigate("/dashboard/NewStudents")}
+            >
+              New : <span>50</span>
+            </Button>
+            <Button
+              style={{ width: "180px", height: "80px", fontSize: "21px" }}
+              onClick={navigateToStudents}
+            >
+              Enrolled : <span>{students.length}</span>
+            </Button>
           </div>
-          <Button
-            type="primary"
-            style={{
-              background: "#8B5EAB",
-              borderColor: "#8B5EAB",
-              width: "100%",
-              fontWeight: "bold",
-            }}
-          >
-            All Courses
-          </Button>
         </Card>
-
-        {/* Students Section */}
+        {/* Test Screen */}
         <Card
           style={{
-            width: "300px",
+            width: "30%",
             borderRadius: "10px",
             borderColor: "#8B5EAB",
             boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
           }}
         >
-          <Title level={5} style={{ marginBottom: "16px" }}>
-            Students:
-          </Title>
+          <Button
+            type="primary"
+            style={{
+              background: "#8B5EAB",
+              borderColor: "#8B5EAB",
+              width: "100%",
+              fontWeight: "bold",
+              marginBottom: "20px",
+            }}
+          >
+            Tests
+          </Button>
           <div
             style={{
               display: "flex",
@@ -107,26 +315,49 @@ const Dashboard = () => {
             }}
           >
             <Button
-              style={{ width: "120px", height: "32px", fontSize: "12px" }}
+              style={{
+                width: "180px",
+                height: "80px",
+                fontSize: "21px",
+                padding: "0",
+              }}
+              onClick={() => navigate("/dashboard/OngoingTest")}
             >
-              Total 50
+              Ongoing : <span>10</span>
             </Button>
             <Button
-              style={{ width: "120px", height: "32px", fontSize: "12px" }}
+              style={{
+                width: "180px",
+                height: "80px",
+                fontSize: "21px",
+                padding: "0",
+              }}
+              onClick={() => navigate("/dashboard/CompletedTest")}
             >
-              Active 40
+              Completed : <span>20</span>
             </Button>
             <Button
-              style={{ width: "120px", height: "32px", fontSize: "12px" }}
+              style={{
+                width: "180px",
+                height: "80px",
+                fontSize: "21px",
+                padding: "0",
+              }}
+              onClick={() => navigate("/dashboard/VerifyTest")}
             >
-              Pending 5
-            </Button>
-            <Button
-              style={{ width: "120px", height: "32px", fontSize: "12px" }}
-            >
-              Inactive 5
+              Verification : <span>30</span>
             </Button>
           </div>
+        </Card>
+        {/* Collages */}
+        <Card
+          style={{
+            width: "30%",
+            borderRadius: "10px",
+            borderColor: "#8B5EAB",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+          }}
+        >
           <Button
             type="primary"
             style={{
@@ -134,48 +365,209 @@ const Dashboard = () => {
               borderColor: "#8B5EAB",
               width: "100%",
               fontWeight: "bold",
+              marginBottom: "20px",
+            }}
+            onClick={handleCollegeClick}
+          >
+            Collages +
+          </Button>
+          <div
+            style={{
+              display: "flex",
+              gap: "10px",
+              flexWrap: "wrap",
+              justifyContent: "center",
+              marginBottom: "16px",
             }}
           >
-            All Students List
-          </Button>
+            <Button
+              onClick={navigateToColleges}
+              style={{ width: "180px", height: "80px", fontSize: "21px" }}
+            >
+              No of Collages : <span>{colleges.length}</span>
+            </Button>
+            <Button
+              style={{ width: "180px", height: "80px", fontSize: "21px" }}
+              onClick={() => navigate("/dashboard/CollageStudents")}
+            >
+              No of Students: <span>20</span>
+            </Button>
+          </div>
         </Card>
       </div>
-
-      {/* Action Buttons */}
-      <div
+      <Card
         style={{
-          display: "flex",
-          gap: "20px",
-          justifyContent: "center",
-          width: "90%",
-          marginBottom: "20px",
+          width: "100%",
+          textAlign: "center",
+          borderRadius: "10px",
+          borderColor: "#8B5EAB",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+          padding: "10px",
         }}
       >
-        <Button
-          type="primary"
+        <Image
+          src={add_dashboard}
+          alt="Dashboard Illustration"
+          preview={false}
+          style={{ height: "300px", width: "400px" }}
+        />
+        <div
           style={{
-            background: "#FFD439",
-            borderColor: "#FFD439",
-            width: "200px",
-            height: "40px",
-            fontWeight: "bold",
+            display: "flex",
+            justifyContent: "center",
+            gap: "20px",
+            marginTop: "20px",
           }}
         >
-          ADD COURSES
-        </Button>
-        <Button
-          type="primary"
-          style={{
-            background: "#8B5EAB",
-            borderColor: "#8B5EAB",
-            width: "200px",
-            height: "40px",
-            fontWeight: "bold",
-          }}
-        >
-          ADD QUESTIONS
-        </Button>
-      </div>
+          <Button
+            type="primary"
+            style={{
+              background: "#FFD439",
+              borderColor: "#FFD439",
+              fontWeight: "bold",
+              width: "200px",
+            }}
+            onClick={() => navigate("addtest")}
+          >
+            Add Test +
+          </Button>
+
+          <Button
+            type="primary"
+            style={{
+              background: "#8B5EAB",
+              borderColor: "#8B5EAB",
+              fontWeight: "bold",
+              width: "200px",
+            }}
+            onClick={() => navigate("addquestions")}
+          >
+            Add Questions +
+          </Button>
+        </div>
+      </Card>
+      <Modal
+        title="Register College"
+        open={modalVisible}
+        onCancel={() => setModalVisible(false)}
+        footer={null}
+      >
+        <Form form={form} layout="vertical" onFinish={handleCollegeSubmit}>
+          <Form.Item
+            name="name"
+            label="College Name"
+            rules={[{ required: true, message: "Please enter college name" }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            name="address"
+            label="Address"
+            rules={[{ required: true, message: "Please enter address" }]}
+          >
+            <Input />
+          </Form.Item>
+          <Title level={5}>Contact Information</Title>
+          <Form.Item
+            name={["contact", "firstname"]}
+            label="First Name"
+            rules={[{ required: true, message: "Enter first name" }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            name={["contact", "lastname"]}
+            label="Last Name"
+            rules={[{ required: true, message: "Enter last name" }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            name={["contact", "email"]}
+            label="Email"
+            rules={[
+              { required: true, type: "email", message: "Enter a valid email" },
+            ]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            name={["contact", "countrycode"]}
+            label="Country Code"
+            initialValue="+91"
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            name={["contact", "mobileno"]}
+            label="Mobile Number"
+            rules={[{ required: true, message: "Enter mobile number" }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item>
+            <Button type="primary" htmlType="submit">
+              Register
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
+      <Modal
+        title="Register Student"
+        open={modalVisible1}
+        onCancel={() => setModalVisible1(false)}
+        footer={null}
+      >
+        <Form form={form1} layout="vertical" onFinish={handleStudentSubmit}>
+          <Form.Item
+            name={["firstname"]}
+            label="First Name"
+            rules={[{ required: true, message: "Enter first name" }]}
+          >
+            <Input />
+          </Form.Item>
+
+          <Form.Item
+            name={["lastname"]}
+            label="Last Name"
+            rules={[{ required: true, message: "Enter last name" }]}
+          >
+            <Input />
+          </Form.Item>
+
+          <Form.Item
+            name={["email"]}
+            label="Email"
+            rules={[
+              { required: true, type: "email", message: "Enter a valid email" },
+            ]}
+          >
+            <Input />
+          </Form.Item>
+
+          <Form.Item
+            name={["countrycode"]}
+            label="Country Code"
+            initialValue="+91"
+          >
+            <Input />
+          </Form.Item>
+
+          <Form.Item
+            name={["mobileno"]}
+            label="Mobile Number"
+            rules={[{ required: true, message: "Enter mobile number" }]}
+          >
+            <Input />
+          </Form.Item>
+
+          <Form.Item>
+            <Button type="primary" htmlType="submit">
+              Register
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
     </LayoutWrapper>
   );
 };
