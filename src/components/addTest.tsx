@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, Checkbox, Button, Select, message, Modal } from "antd";
 import LayoutWrapper from "../layouts/layoutWrapper";
 import { useNavigate } from "react-router-dom";

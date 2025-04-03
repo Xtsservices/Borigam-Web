@@ -1,8 +1,4 @@
 import {
-  JSXElementConstructor,
-  ReactElement,
-  ReactNode,
-  ReactPortal,
   useEffect,
   useState,
 } from "react";
@@ -61,7 +57,7 @@ interface Students {
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const [courses, setCourses] = useState<Course[]>([]);
+  const [, setCourses] = useState<Course[]>([]);
   const [colleges, setColleges] = useState<College[]>([]);
   const [students, setStudents] = useState<Students[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
@@ -134,6 +130,7 @@ const Dashboard = () => {
       console.error("Error fetching colleges:", error);
     }
   };
+
 
   const fetchStudents = async () => {
     const token = localStorage.getItem("token");
@@ -274,13 +271,13 @@ const Dashboard = () => {
               style={{ width: "180px", height: "80px", fontSize: "21px" }}
               onClick={() => navigate("/dashboard/NewStudents")}
             >
-              New : <span>50</span>
+              All Students : <span>{students.length}</span>
             </Button>
             <Button
               style={{ width: "180px", height: "80px", fontSize: "21px" }}
               onClick={navigateToStudents}
             >
-              Enrolled : <span>{students.length}</span>
+              Unenrolled :
             </Button>
           </div>
         </Card>

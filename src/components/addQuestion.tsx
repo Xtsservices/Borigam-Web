@@ -116,19 +116,6 @@ const AddQuestions = () => {
   };
 
   // ✅ Function to reset form fields
-  const resetForm = () => {
-    setSelectedCourse("");
-    setSelectedCourseId(null);
-    setSelectedLevel("");
-    setQuestionText("");
-    setQuestionType("");
-    setOptions([
-      { option_text: "", is_correct: false },
-      { option_text: "", is_correct: false },
-      { option_text: "", is_correct: false },
-      { option_text: "", is_correct: false },
-    ]);
-  };
 
   return (
     <LayoutWrapper pageTitle="Add Question">

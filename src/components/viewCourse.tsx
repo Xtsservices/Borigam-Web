@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Button, Card, Typography, List, Divider, Image } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import LayoutWrapper from '../layouts/layoutWrapper';
-import { Course, courses } from './types/course';
+import { courses } from './types/course';
 
 const { Title, Text, Paragraph } = Typography;
 
