@@ -1,7 +1,4 @@
-import {
-  useEffect,
-  useState,
-} from "react";
+import { useEffect, useState } from "react";
 import {
   Card,
   Button,
@@ -55,11 +52,17 @@ interface Students {
   status: number;
 }
 
+interface UnassignedStudents {
+  count: number;
+}
+
 const Dashboard = () => {
   const navigate = useNavigate();
   const [, setCourses] = useState<Course[]>([]);
   const [colleges, setColleges] = useState<College[]>([]);
   const [students, setStudents] = useState<Students[]>([]);
+  const [unassignedStudents, setunassignedStudents] =
+    useState<UnassignedStudents>({ count: 0 });
   const [modalVisible, setModalVisible] = useState(false);
   const [modalVisible1, setModalVisible1] = useState(false);
   const [form] = Form.useForm();
@@ -99,6 +102,7 @@ const Dashboard = () => {
     fetchColleges();
     fetchCourses();
     fetchStudents();
+    fetchUnassignedStudentsCount();
   }, []);
 
   const fetchColleges = async () => {
@@ -131,6 +135,37 @@ const Dashboard = () => {
     }
   };
 
+  const fetchUnassignedStudentsCount = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      console.error("No token found, authentication required");
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        "http://localhost:3001/api/student/getUnassignedStudentsCount",
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            token: token,
+          },
+        }
+      );
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      const result = await response.json();
+      if (result.data) {
+        setunassignedStudents({ count: result.data.count });
+      } else {
+        console.error("Unexpected response format:", result);
+      }
+    } catch (error) {
+      console.error("Error fetching unassigned students count:", error);
+    }
+  };
 
   const fetchStudents = async () => {
     const token = localStorage.getItem("token");
@@ -179,6 +214,7 @@ const Dashboard = () => {
       alert("College registered successfully!");
       setModalVisible(false);
       form.resetFields();
+      window.location.reload();
     } catch (error) {
       console.error("Error registering college:", error);
       message.error("Failed to register college");
@@ -204,6 +240,7 @@ const Dashboard = () => {
       alert("Student created successfully!");
       setModalVisible1(false);
       form1.resetFields();
+      window.location.reload();
     } catch (error) {
       console.error("Error creating student:", error);
       message.error("Failed to create student");
@@ -223,7 +260,7 @@ const Dashboard = () => {
   };
 
   const navigateToStudents = () => {
-    navigate("/dashboard/Enrolled");
+    navigate("/dashboard/AllStudents");
   };
 
   return (
@@ -269,15 +306,15 @@ const Dashboard = () => {
           >
             <Button
               style={{ width: "180px", height: "80px", fontSize: "21px" }}
-              onClick={() => navigate("/dashboard/NewStudents")}
+              onClick={navigateToStudents}
             >
               All Students : <span>{students.length}</span>
             </Button>
             <Button
               style={{ width: "180px", height: "80px", fontSize: "21px" }}
-              onClick={navigateToStudents}
+              onClick={() => navigate("/dashboard/unassigned")}
             >
-              Unenrolled :
+              Unassigned : <span>{unassignedStudents.count}</span>
             </Button>
           </div>
         </Card>

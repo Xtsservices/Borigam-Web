@@ -13,7 +13,7 @@ interface Student {
   college_name: string;
 }
 
-const EnrolledStudents: React.FC = () => {
+const AllStudents: React.FC = () => {
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -68,7 +68,7 @@ const EnrolledStudents: React.FC = () => {
   ];
 
   return (
-    <LayoutWrapper pageTitle="BORIGAM / Students Enrolled">
+    <LayoutWrapper pageTitle="BORIGAM / All Students ">
       <div
         className="enrolled-students-container"
         style={{
@@ -90,7 +90,7 @@ const EnrolledStudents: React.FC = () => {
             textAlign: "center",
           }}
         >
-          Enrolled Students
+          All Students
         </div>
         {loading ? (
           <Spin
@@ -116,4 +116,4 @@ const EnrolledStudents: React.FC = () => {
   );
 };
 
-export default EnrolledStudents;
+export default AllStudents;

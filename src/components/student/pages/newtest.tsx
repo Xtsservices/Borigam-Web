@@ -40,7 +40,7 @@ const TestScreen: React.FC = () => {
       .get("http://localhost:3001/api/question/viewAllTests", axiosConfig)
       .then((response) => {
         if (response.data.data.length > 0) {
-          setTestId(response.data.data[1].test_id);
+          setTestId(response.data.data[0].test_id);
         }
       })
       .catch((error) => console.error("Error fetching test ID:", error));

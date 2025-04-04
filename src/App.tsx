@@ -9,12 +9,12 @@ import AddQuestions from "./components/addQuestion.tsx";
 import AddTest from "./components/addTest.tsx";
 import Settings from "./components/settings.tsx";
 import StudentDashoard from "./components/student/studentDashboard.tsx";
-import EnrolledStudents from "./components/pages/enrolledStudents.tsx";
+import AllStudents from "./components/pages/allStudents.tsx";
 import CollageList from "./components/pages/noOfCollages.tsx";
 import OngoingTest from "./components/pages/onGoingTests.tsx";
 import VerifyTest from "./components/pages/verifyTests.tsx";
 import CollageStudents from "./components/pages/noOfStudentsCollages.tsx";
-import NewStudents from "./components/pages/newStudents.tsx";
+import UnassignedStudents from "./components/pages/unassignedStudents.tsx";
 import CompletedTest from "./components/pages/completedTest.tsx";
 import TestScreen from "./components/student/pages/newtest.tsx";
 
@@ -33,12 +33,12 @@ const App: React.FC = () => {
 
         {/* Dashboard Pages */}
 
-        <Route path="/dashboard/Enrolled" element={<EnrolledStudents />} />
+        <Route path="/dashboard/AllStudents" element={<AllStudents />} />
         <Route path="/dashboard/CollageList" element={<CollageList />} />
         <Route path="/dashboard/OngoingTest" element={<OngoingTest />} />
         <Route path="/dashboard/VerifyTest" element={<VerifyTest />} />
         <Route path="/dashboard/CollageStudents" element={<CollageStudents />} />
-        <Route path="/dashboard/NewStudents" element={<NewStudents />} />
+        <Route path="/dashboard/unassigned" element={<UnassignedStudents />} />
         <Route path="/dashboard/CompletedTest" element={<CompletedTest />} />
 
         {/* Student */}

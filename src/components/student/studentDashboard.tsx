@@ -28,12 +28,12 @@ const StudentDashboard: React.FC = () => {
   const dataSource: StudentData[] = [
     {
       key: "1",
-      name: "John Doe",
-      email: "john@example.com",
-      phone: "+1234567890",
-      courses: "NIFT, CEED",
-      startDate: "01 Jan 2024",
-      endDate: "31 Dec 2024",
+      name: "KSamu",
+      email: "samu@gmail.com",
+      phone: "+91 7327882009",
+      courses: "NIFT",
+      startDate: "01 Jan 2025",
+      endDate: "01 Dec 2026",
     },
   ];
 
