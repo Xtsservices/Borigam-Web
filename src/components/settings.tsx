@@ -40,7 +40,7 @@ const Settings: React.FC = () => {
       }
       try {
         const response = await fetch(
-          "http://localhost:3001/api/course/getCourses",
+          "http://13.233.33.133/api/course/getCourses",
           {
             method: "GET",
             headers: {
@@ -61,7 +61,7 @@ const Settings: React.FC = () => {
     const fetchTests = async () => {
       try {
         const response = await fetch(
-          "http://localhost:3001/api/question/viewAllTests",
+          "http://13.233.33.133/api/question/viewAllTests",
           {
             method: "GET",
             headers: {

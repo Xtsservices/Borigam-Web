@@ -42,7 +42,7 @@ const SignUpForm: React.FC = () => {
       };
 
       const response = await axios.post(
-        "http://localhost:3001/api/users/createUser",
+        "http://13.233.33.133/api/users/createUser",
         payload
       );
 
@@ -53,6 +53,7 @@ const SignUpForm: React.FC = () => {
         );
         if (userConfirmed) {
           form.resetFields();
+          alert("Created User Success");
           navigate("/");
         }
       } else {

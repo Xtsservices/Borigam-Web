@@ -33,7 +33,7 @@ const AddQuestions = () => {
     const fetchCourses = async () => {
       try {
         const response = await fetch(
-          "http://localhost:3001/api/course/getCourses",
+          "http://13.233.33.133/api/course/getCourses",
           {
             headers: {
               "Content-Type": "application/json",
@@ -88,7 +88,7 @@ const AddQuestions = () => {
 
     try {
       const response = await fetch(
-        "http://localhost:3001/api/question/createQuestion",
+        "http://13.233.33.133/api/question/createQuestion",
         {
           method: "POST",
           headers: { 
@@ -118,7 +118,7 @@ const AddQuestions = () => {
   // ✅ Function to reset form fields
 
   return (
-    <LayoutWrapper pageTitle="Add Question">
+    <LayoutWrapper pageTitle="BORIGAM / Add Question">
       <Card className="w-1/2 mx-auto p-6">
         <Form layout="vertical" onFinish={handleSubmit}>
           <Form.Item

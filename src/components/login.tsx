@@ -25,7 +25,7 @@ const Login = () => {
       };
 
       const response = await axios.post(
-        "http://localhost:3001/api/users/login",
+        "http://13.233.33.133/api/users/login",
         payload
       );
 

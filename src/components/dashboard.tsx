@@ -79,7 +79,7 @@ const Dashboard = () => {
 
       try {
         const response = await fetch(
-          "http://localhost:3001/api/course/getCourses",
+          "http://13.233.33.133/api/course/getCourses",
           {
             method: "GET",
             headers: {
@@ -114,7 +114,7 @@ const Dashboard = () => {
 
     try {
       const response = await fetch(
-        "http://localhost:3001/api/college/viewAllCollegesAndUsers",
+        "http://13.233.33.133/api/college/viewAllCollegesAndUsers",
         {
           method: "GET",
           headers: {
@@ -144,7 +144,7 @@ const Dashboard = () => {
 
     try {
       const response = await fetch(
-        "http://localhost:3001/api/student/getUnassignedStudentsCount",
+        "http://13.233.33.133/api/student/getUnassignedStudentsCount",
         {
           method: "GET",
           headers: {
@@ -175,7 +175,7 @@ const Dashboard = () => {
     }
     try {
       const response = await fetch(
-        "http://localhost:3001/api/student/getAllStudents",
+        "http://13.233.33.133/api/student/getAllStudents",
         {
           method: "GET",
           headers: {
@@ -198,7 +198,7 @@ const Dashboard = () => {
   const handleCollegeSubmit = async (values: any) => {
     try {
       const response = await fetch(
-        "http://localhost:3001/api/college/registerCollege",
+        "http://13.233.33.133/api/college/registerCollege",
         {
           method: "POST",
           headers: {
@@ -224,7 +224,7 @@ const Dashboard = () => {
   const handleStudentSubmit = async (values: any) => {
     try {
       const response = await fetch(
-        "http://localhost:3001/api/student/createStudent",
+        "http://13.233.33.133/api/student/createStudent",
         {
           method: "POST",
           headers: {
