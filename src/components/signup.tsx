@@ -42,7 +42,7 @@ const SignUpForm: React.FC = () => {
       };
 
       const response = await axios.post(
-        "http://13.233.33.133/api/users/createUser",
+        "http://13.233.33.133:3001/api/users/createUser",
         payload
       );
 

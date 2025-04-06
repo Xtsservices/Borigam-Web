@@ -27,7 +27,7 @@ const AddTest = () => {
     const fetchQuestions = async () => {
       try {
         const response = await fetch(
-          "http://13.233.33.133/api/question/getAllQuestions",
+          "http://13.233.33.133:3001/api/question/getAllQuestions",
           {
             headers: {
               "Content-Type": "application/json",
@@ -72,7 +72,7 @@ const AddTest = () => {
   
     try {
       const response = await fetch(
-        "http://13.233.33.133/api/question/createTest",
+        "http://13.233.33.133:3001/api/question/createTest",
         {
           method: "POST",
           headers: {

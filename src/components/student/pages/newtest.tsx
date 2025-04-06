@@ -37,7 +37,7 @@ const TestScreen: React.FC = () => {
 
   useEffect(() => {
     axios
-      .get("http://13.233.33.133/api/question/viewAllTests", axiosConfig)
+      .get("http://13.233.33.133:3001/api/question/viewAllTests", axiosConfig)
       .then((response) => {
         if (response.data.data.length > 0) {
           setTestId(response.data.data[0].test_id);
@@ -50,7 +50,7 @@ const TestScreen: React.FC = () => {
     if (testId) {
       axios
         .get(
-          `http://13.233.33.133/api/question/viewTestByID?id=${testId}`,
+          `http://13.233.33.133:3001/api/question/viewTestByID?id=${testId}`,
           axiosConfig
         )
         .then((response) => {
@@ -95,7 +95,7 @@ const TestScreen: React.FC = () => {
 
     try {
       const response = await axios.post(
-        "http://13.233.33.133/api/testsubmission/submitTest",
+        "http://13.233.33.133:3001/api/testsubmission/submitTest",
         payload,
         axiosConfig
       );
