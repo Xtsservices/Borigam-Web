@@ -52,6 +52,14 @@ interface Students {
   status: number;
 }
 
+interface Subject {
+  id: number;
+  name: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+}
+
 interface UnassignedStudents {
   count: number;
 }
@@ -61,10 +69,12 @@ const Dashboard = () => {
   const [, setCourses] = useState<Course[]>([]);
   const [colleges, setColleges] = useState<College[]>([]);
   const [students, setStudents] = useState<Students[]>([]);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
   const [unassignedStudents, setunassignedStudents] =
     useState<UnassignedStudents>({ count: 0 });
   const [modalVisible, setModalVisible] = useState(false);
   const [modalVisible1, setModalVisible1] = useState(false);
+  const [modalVisible2, setModalVisible2] = useState(false);
   const [form] = Form.useForm();
   const [form1] = Form.useForm();
 
@@ -99,10 +109,42 @@ const Dashboard = () => {
         console.error("Error fetching courses:", error);
       }
     };
+
+    const fetchSubjects = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        console.error("No token found, authentication required");
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          "http://13.233.33.133:3001/api/course/getSubjects",
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              token: token,
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        setSubjects(data);
+      } catch (error) {
+        console.error("Error fetching subjects:", error);
+      }
+    };
+
     fetchColleges();
     fetchCourses();
     fetchStudents();
     fetchUnassignedStudentsCount();
+    fetchSubjects();
   }, []);
 
   const fetchColleges = async () => {
@@ -247,8 +289,38 @@ const Dashboard = () => {
     }
   };
 
+  const handleSubjectSubmit = async (values: any) => {
+    try {
+      const response = await fetch(
+        "http://13.233.33.133:3001/api/course/createSubject",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            token: localStorage.getItem("token") || "",
+          },
+          body: JSON.stringify(values),
+        }
+      );
+      if (!response.ok) {
+        throw new Error("Failed to create student");
+      }
+      alert("Student created successfully!");
+      setModalVisible2(false);
+      form1.resetFields();
+      window.location.reload();
+    } catch (error) {
+      console.error("Error creating student:", error);
+      message.error("Failed to create student");
+    }
+  };
+
   const handleCollegeClick = () => {
     setModalVisible(true);
+  };
+
+  const handleSubjectsClick = () => {
+    setModalVisible2(true);
   };
 
   const handleStudentClick = () => {
@@ -269,17 +341,19 @@ const Dashboard = () => {
         style={{
           display: "flex",
           justifyContent: "space-between",
-          flexWrap: "wrap",
-          gap: "20px",
-          marginBottom: "20px",
+          flexWrap: "nowrap", // Changed from wrap to nowrap
+          gap: "10px", // Reduced gap
+          marginBottom: "20px", // Allows horizontal scrolling if needed
         }}
       >
+        {/* Students Card */}
         <Card
           style={{
-            width: "30%",
+            minWidth: "23%", // Changed from fixed width to minWidth
             borderRadius: "10px",
             borderColor: "#8B5EAB",
             boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+            flexShrink: 0, // Prevents card from shrinking
           }}
         >
           <Button
@@ -290,6 +364,7 @@ const Dashboard = () => {
               width: "100%",
               fontWeight: "bold",
               marginBottom: "20px",
+              whiteSpace: "nowrap", // Prevents button text from wrapping
             }}
             onClick={handleStudentClick}
           >
@@ -298,33 +373,35 @@ const Dashboard = () => {
           <div
             style={{
               display: "flex",
-              gap: "10px",
+              gap: "8px", // Reduced gap
               flexWrap: "wrap",
               justifyContent: "center",
               marginBottom: "16px",
             }}
           >
             <Button
-              style={{ width: "180px", height: "80px", fontSize: "21px" }}
+              style={{ width: "120px", height: "45px", fontSize: "14px" }} // Slightly smaller
               onClick={navigateToStudents}
             >
-              All Students : <span>{students.length}</span>
+              All: {students.length}
             </Button>
             <Button
-              style={{ width: "180px", height: "80px", fontSize: "21px" }}
+              style={{ width: "120px", height: "45px", fontSize: "14px" }}
               onClick={() => navigate("/dashboard/unassigned")}
             >
-              Unassigned : <span>{unassignedStudents.count}</span>
+              Unassigned: {unassignedStudents.count}
             </Button>
           </div>
         </Card>
-        {/* Test Screen */}
+
+        {/* Tests Card */}
         <Card
           style={{
-            width: "30%",
+            minWidth: "23%",
             borderRadius: "10px",
             borderColor: "#8B5EAB",
             boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+            flexShrink: 0,
           }}
         >
           <Button
@@ -335,6 +412,7 @@ const Dashboard = () => {
               width: "100%",
               fontWeight: "bold",
               marginBottom: "20px",
+              whiteSpace: "nowrap",
             }}
           >
             Tests
@@ -342,54 +420,35 @@ const Dashboard = () => {
           <div
             style={{
               display: "flex",
-              gap: "10px",
+              gap: "8px",
               flexWrap: "wrap",
               justifyContent: "center",
               marginBottom: "16px",
             }}
           >
             <Button
-              style={{
-                width: "180px",
-                height: "80px",
-                fontSize: "21px",
-                padding: "0",
-              }}
+              style={{ width: "120px", height: "45px", fontSize: "14px" }}
               onClick={() => navigate("/dashboard/OngoingTest")}
             >
-              Ongoing : <span>10</span>
+              Ongoing
             </Button>
             <Button
-              style={{
-                width: "180px",
-                height: "80px",
-                fontSize: "21px",
-                padding: "0",
-              }}
+              style={{ width: "120px", height: "45px", fontSize: "14px" }}
               onClick={() => navigate("/dashboard/CompletedTest")}
             >
-              Completed : <span>20</span>
-            </Button>
-            <Button
-              style={{
-                width: "180px",
-                height: "80px",
-                fontSize: "21px",
-                padding: "0",
-              }}
-              onClick={() => navigate("/dashboard/VerifyTest")}
-            >
-              Verification : <span>30</span>
+              Completed
             </Button>
           </div>
         </Card>
-        {/* Collages */}
+
+        {/* Colleges Card */}
         <Card
           style={{
-            width: "30%",
+            minWidth: "23%",
             borderRadius: "10px",
             borderColor: "#8B5EAB",
             boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+            flexShrink: 0,
           }}
         >
           <Button
@@ -400,15 +459,16 @@ const Dashboard = () => {
               width: "100%",
               fontWeight: "bold",
               marginBottom: "20px",
+              whiteSpace: "nowrap",
             }}
             onClick={handleCollegeClick}
           >
-            Collages +
+            Colleges +
           </Button>
           <div
             style={{
               display: "flex",
-              gap: "10px",
+              gap: "8px",
               flexWrap: "wrap",
               justifyContent: "center",
               marginBottom: "16px",
@@ -416,16 +476,71 @@ const Dashboard = () => {
           >
             <Button
               onClick={navigateToColleges}
-              style={{ width: "180px", height: "80px", fontSize: "21px" }}
+              style={{ width: "120px", height: "45px", fontSize: "14px" }}
             >
-              No of Collages : <span>{colleges.length}</span>
+              Colleges: {colleges.length}
             </Button>
             <Button
-              style={{ width: "180px", height: "80px", fontSize: "21px" }}
+              style={{ width: "120px", height: "45px", fontSize: "14px" }}
               onClick={() => navigate("/dashboard/CollageStudents")}
             >
-              No of Students: <span>20</span>
+              Students: 20
             </Button>
+          </div>
+        </Card>
+
+        {/* Subjects Card */}
+        <Card
+          style={{
+            minWidth: "23%",
+            borderRadius: "10px",
+            borderColor: "#8B5EAB",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+            flexShrink: 0,
+          }}
+        >
+          <Button
+            type="primary"
+            style={{
+              background: "#8B5EAB",
+              borderColor: "#8B5EAB",
+              width: "100%",
+              fontWeight: "bold",
+              marginBottom: "20px",
+              whiteSpace: "nowrap",
+            }}
+            onClick={handleSubjectsClick}
+          >
+            Subjects +
+          </Button>
+          <div
+            style={{
+              display: "flex",
+              gap: "8px",
+              flexWrap: "wrap",
+              justifyContent: "center",
+              marginBottom: "16px",
+            }}
+          >
+            {subjects.length > 0 ? (
+              subjects.slice(0, 2).map(
+                (
+                  subject // Only show first 2 subjects
+                ) => (
+                  <Button
+                    key={subject.id}
+                    style={{ width: "120px", height: "45px", fontSize: "14px" }}
+                    onClick={() => navigate(`/dashboard/subject/${subject.id}`)}
+                  >
+                    {subject.name}
+                  </Button>
+                )
+              )
+            ) : (
+              <Typography.Text style={{ fontSize: "14px" }}>
+                No subjects
+              </Typography.Text>
+            )}
           </div>
         </Card>
       </div>
@@ -500,6 +615,13 @@ const Dashboard = () => {
             rules={[{ required: true, message: "Please enter address" }]}
           >
             <Input />
+          </Form.Item>
+          <Form.Item 
+            name="code"
+            label="College Code"
+            rules={[{ required: true, message: "Please enter college code" }]}
+          >
+            <Input/>
           </Form.Item>
           <Title level={5}>Contact Information</Title>
           <Form.Item
@@ -595,6 +717,27 @@ const Dashboard = () => {
             <Input />
           </Form.Item>
 
+          <Form.Item>
+            <Button type="primary" htmlType="submit">
+              Register
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
+      <Modal
+        title="Register Subject"
+        open={modalVisible2}
+        onCancel={() => setModalVisible2(false)}
+        footer={null}
+      >
+        <Form form={form1} layout="vertical" onFinish={handleSubjectSubmit}>
+          <Form.Item
+            name="name"
+            label="Subject Name"
+            rules={[{ required: true, message: "Please Enter The Subject" }]}
+          >
+            <Input />
+          </Form.Item>
           <Form.Item>
             <Button type="primary" htmlType="submit">
               Register

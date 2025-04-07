@@ -17,6 +17,8 @@ import CollageStudents from "./components/pages/noOfStudentsCollages.tsx";
 import UnassignedStudents from "./components/pages/unassignedStudents.tsx";
 import CompletedTest from "./components/pages/completedTest.tsx";
 import TestScreen from "./components/student/pages/newtest.tsx";
+import StudentCompletedTest from "./components/student/pages/completedTests.tsx";
+import StudyMaterial from "./components/studyMaterial.tsx";
 
 const App: React.FC = () => {
   return (
@@ -26,6 +28,7 @@ const App: React.FC = () => {
         <Route path="/" element={<Login />} />
         <Route path="/forgotpassword" element={<ForgotPassword />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/study-material" element={<StudyMaterial />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/dashboard/Addquestions" element={<AddQuestions />} />
         <Route path="/dashboard/Addtest" element={<AddTest />} />
@@ -45,6 +48,7 @@ const App: React.FC = () => {
 
         <Route path="/student/dashboard" element={<StudentDashoard />} />
         <Route path="/student/TestScreen" element={<TestScreen />} />
+        <Route path="/student/CompletedTest" element={<StudentCompletedTest />} />
 
       </Routes>
     </Router>

@@ -19,6 +19,7 @@ interface College {
   collegeName: string;
   collegeAddress: string;
   collegeStatus: number;
+  collegeCode: string;
   users: User[];
 }
 
@@ -63,6 +64,11 @@ const CollegeList: React.FC = () => {
       title: "College Address",
       dataIndex: "collegeAddress",
       key: "collegeAddress",
+    },
+    {
+      title: "College Code",
+      dataIndex: "collegeCode",
+      key: "collegeCode",
     },
     {
       title: "Name",

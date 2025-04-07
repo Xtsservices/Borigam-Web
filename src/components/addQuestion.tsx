@@ -1,22 +1,59 @@
 import { useEffect, useState } from "react";
-import { Form, Select, Button, Card, Input, message, Modal } from "antd";
+import {
+  Form,
+  Select,
+  Button,
+  Card,
+  Input,
+  message,
+  Modal,
+  Typography,
+} from "antd";
 import LayoutWrapper from "../layouts/layoutWrapper";
 
 const { Option } = Select;
+const { Text } = Typography;
 
-interface Course {
+interface Subject {
   id: number;
   name: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
 }
 
+interface QuestionPayload {
+  name: string;
+  type: string;
+  subject_id: number;
+  options: Array<{
+    option_text: string;
+    is_correct: boolean;
+  }>;
+}
+
+// Utility function to format dates
+const formatDate = (dateString: string) => {
+  if (!dateString) return "N/A";
+
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
 const AddQuestions = () => {
-  const [courses, setCourses] = useState<Course[]>([]);
-  const levels = ["UG", "PG"];
+  const [subjects, setSubjects] = useState<Subject[]>([]);
   const questionTypes = ["radio"];
 
-  const [selectedCourse, setSelectedCourse] = useState<string>("");
-  const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
-  const [selectedLevel, setSelectedLevel] = useState<string>("");
+  const [selectedSubject, setSelectedSubject] = useState<string>("");
+  const [selectedSubjectId, setSelectedSubjectId] = useState<number | null>(
+    null
+  );
   const [questionText, setQuestionText] = useState<string>("");
   const [questionType, setQuestionType] = useState<string>("");
   const [options, setOptions] = useState([
@@ -25,15 +62,14 @@ const AddQuestions = () => {
     { option_text: "", is_correct: false },
     { option_text: "", is_correct: false },
   ]);
-
-  // ✅ Modal State
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
 
   useEffect(() => {
-    const fetchCourses = async () => {
+    const fetchSubjects = async () => {
       try {
         const response = await fetch(
-          "http://13.233.33.133:3001/api/course/getCourses",
+          "http://13.233.33.133:3001/api/course/getSubjects",
           {
             headers: {
               "Content-Type": "application/json",
@@ -42,24 +78,18 @@ const AddQuestions = () => {
           }
         );
 
-        if (!response.ok) throw new Error("Failed to fetch courses");
+        if (!response.ok) throw new Error("Failed to fetch subjects");
 
-        const data: Course[] = await response.json();
-        setCourses(data);
-        console.log("Fetched Courses:", data);
+        const data = await response.json();
+        setSubjects(data);
       } catch (error) {
-        console.error("Error fetching courses:", error);
+        console.error("Error fetching subjects:", error);
+        message.error("Failed to load subjects");
       }
     };
 
-    fetchCourses();
+    fetchSubjects();
   }, []);
-
-  const handleCourseChange = (value: string) => {
-    const course = courses.find((course) => course.name === value);
-    setSelectedCourse(value);
-    setSelectedCourseId(course ? course.id : null);
-  };
 
   const handleOptionChange = (index: number, text: string) => {
     setOptions((prev) =>
@@ -74,86 +104,91 @@ const AddQuestions = () => {
   };
 
   const handleSubmit = async () => {
-    if (!selectedCourseId || !questionText || !questionType) {
+    if (!questionText || !selectedSubjectId || !questionType) {
       message.error("Please fill in all required fields.");
       return;
     }
 
-    const payload = {
-      name: questionText,
-      type: questionType.toLowerCase().replace(" ", "_"),
-      course_id: selectedCourseId,
-      options: options.filter((opt) => opt.option_text.trim() !== ""),
-    };
+    const formData = new FormData();
+    formData.append("name", questionText);
+    formData.append("type", questionType.toLowerCase().replace(" ", "_"));
+    formData.append("subject_id", selectedSubjectId.toString());
+    formData.append(
+      "options",
+      JSON.stringify(options.filter((opt) => opt.option_text.trim() !== ""))
+    );
+
+    if (imageFile) {
+      formData.append("image", imageFile);
+    }
 
     try {
       const response = await fetch(
         "http://13.233.33.133:3001/api/question/createQuestion",
         {
           method: "POST",
-          headers: { 
-            "Content-Type": "application/json",
+          headers: {
             token: localStorage.getItem("token") || "",
           },
-          body: JSON.stringify(payload),
+          body: formData,
         }
       );
 
       if (!response.ok) throw new Error("Failed to submit question");
 
       message.success("Question added successfully!");
-      setIsModalVisible(true); // ✅ Show Modal on Success
+      setIsModalVisible(true);
     } catch (error) {
       console.error("Error submitting question:", error);
       message.error("Failed to add question.");
     }
   };
 
-  // ✅ Reset form after closing modal
   const handleModalOk = () => {
     setIsModalVisible(false);
-    window.location.reload()
+    window.location.reload();
   };
-
-  // ✅ Function to reset form fields
 
   return (
     <LayoutWrapper pageTitle="BORIGAM / Add Question">
       <Card className="w-1/2 mx-auto p-6">
         <Form layout="vertical" onFinish={handleSubmit}>
           <Form.Item
-            label="Select Course:"
-            name="course"
+            label="Select Subject:"
+            name="subject"
             rules={[{ required: true }]}
           >
-            <Select onChange={handleCourseChange} value={selectedCourse} placeholder="Select">
-              {courses.map((course) => (
-                <Option key={course.id} value={course.name}>
-                  {course.name}
+            <Select
+              onChange={(value) => {
+                const selectedSubject = subjects.find(
+                  (sub) => sub.name === value
+                );
+                setSelectedSubject(selectedSubject?.name || "");
+                setSelectedSubjectId(selectedSubject?.id || null);
+              }}
+              value={selectedSubject}
+              placeholder="Select Subject"
+            >
+              {subjects.map((subject) => (
+                <Option key={subject.id} value={subject.name}>
+                  {subject.name} (Created: {formatDate(subject.created_at)})
                 </Option>
               ))}
             </Select>
           </Form.Item>
 
-          <Form.Item label="Select Level:" name="level">
-            <Select onChange={setSelectedLevel} value={selectedLevel} placeholder="Select">
-              {levels.map((level) => (
-                <Option key={level} value={level}>
-                  {level}
-                </Option>
-              ))}
-            </Select>
-          </Form.Item>
-
-          <Form.Item
-            label="Add Question:"
-            name="questionText"
-            rules={[{ required: true }]}
-          >
+          <Form.Item label="Add Question:" required>
             <Input
               value={questionText}
               onChange={(e) => setQuestionText(e.target.value)}
               placeholder="Enter your question"
+            />
+          </Form.Item>
+          <Form.Item label="Upload Question Image (optional)">
+            <Input
+              type="file"
+              accept="image/*"
+              onChange={(e) => setImageFile(e.target.files?.[0] || null)}
             />
           </Form.Item>
 
@@ -162,7 +197,11 @@ const AddQuestions = () => {
             name="questionType"
             rules={[{ required: true }]}
           >
-            <Select onChange={setQuestionType} value={questionType} placeholder="Select">
+            <Select
+              onChange={setQuestionType}
+              value={questionType}
+              placeholder="Select"
+            >
               {questionTypes.map((type) => (
                 <Option key={type} value={type}>
                   {type}
@@ -198,7 +237,6 @@ const AddQuestions = () => {
         </Form>
       </Card>
 
-      {/* ✅ Success Modal */}
       <Modal
         title="Success"
         open={isModalVisible}
@@ -207,6 +245,16 @@ const AddQuestions = () => {
         okText="OK"
       >
         <p>Question added successfully!</p>
+        {subjects.find((sub) => sub.id === selectedSubjectId) && (
+          <Text type="secondary">
+            Subject: {selectedSubject} (Last updated:{" "}
+            {formatDate(
+              subjects.find((sub) => sub.id === selectedSubjectId)
+                ?.updated_at || ""
+            )}
+            )
+          </Text>
+        )}
       </Modal>
     </LayoutWrapper>
   );

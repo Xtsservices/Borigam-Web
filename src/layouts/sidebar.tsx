@@ -3,6 +3,7 @@ import {
   HomeOutlined,
   SettingOutlined,
   LogoutOutlined,
+  BookOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { Modal } from "antd";
@@ -30,10 +31,9 @@ const AppSidebar = () => {
   };
 
   const handleOnClick = () => {
-    console.log("123456")
+    console.log("123456");
     navigate("/settings");
   };
-
 
   return (
     <Sider
@@ -42,7 +42,6 @@ const AppSidebar = () => {
         background: "#EFE4F0",
         display: "flex",
         flexDirection: "column",
-        justifyContent: "space-between",
       }}
     >
       <Menu
@@ -56,6 +55,7 @@ const AppSidebar = () => {
               <HomeOutlined
                 style={{ fontSize: "30px" }}
                 onClick={() => navigate("/dashboard")}
+                name="Dashboard"
               />
             ),
             style: {
@@ -72,6 +72,24 @@ const AppSidebar = () => {
               <SettingOutlined
                 style={{ fontSize: "30px" }}
                 onClick={handleOnClick}
+                name="Settings"
+              />
+            ),
+            style: {
+              textAlign: "center",
+              height: "64px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            },
+          },
+          {
+            key: "StudyMaterial",
+            icon: (
+              <BookOutlined
+                style={{ fontSize: "30px" }}
+                onClick={() => navigate("/study-material")}
+                name="Study Material"
               />
             ),
             style: {
@@ -86,11 +104,12 @@ const AppSidebar = () => {
       />
 
       {/* Logout Button */}
-      <div style={{ padding: "10px", textAlign: "center" }}>
+      <div style={{ padding: "10px", textAlign: "inherit" }}>
         <Button
           type="text"
           icon={<LogoutOutlined style={{ fontSize: "20px" }} />}
           onClick={handleLogout}
+          name="Logout"
           style={{
             width: "100%",
             height: "64px",

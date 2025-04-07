@@ -20,13 +20,22 @@ interface Course {
   name: string;
 }
 
+interface Batch {
+  batch_id: number;
+  name: string;
+  course_id: number;
+}
+
 const UnassignedStudents: React.FC = () => {
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [courses, setCourses] = useState<Course[]>([]);
+  const [batches, setBatches] = useState<Batch[]>([]);
+  const [filteredBatches, setFilteredBatches] = useState<Batch[]>([]);
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [selectedCourse, setSelectedCourse] = useState<number | null>(null);
+  const [selectedBatch, setSelectedBatch] = useState<number | null>(null);
   const [startDate, setStartDate] = useState<string | null>(null);
   const [endDate, setEndDate] = useState<string | null>(null);
 
@@ -51,39 +60,76 @@ const UnassignedStudents: React.FC = () => {
         setLoading(false);
       });
 
-      fetchCourses()
+    fetchCourses();
+    fetchBatches();
   }, []);
 
-    const fetchCourses = async () => {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        console.error("No token found, authentication required");
-        return;
-      }
-      try {
-        const response = await fetch(
-          "http://13.233.33.133:3001/api/course/getCourses",
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              token: token,
-            },
-          }
-        );
-        if (!response.ok)
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        const data: Course[] = await response.json();
-        setCourses(data);
-      } catch (error) {
-        console.error("Error fetching courses:", error);
-      }
-    };
+  const fetchCourses = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      console.error("No token found, authentication required");
+      return;
+    }
+    try {
+      const response = await fetch(
+        "http://13.233.33.133:3001/api/course/getCourses",
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            token: token,
+          },
+        }
+      );
+      if (!response.ok)
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      const data: Course[] = await response.json();
+      setCourses(data);
+    } catch (error) {
+      console.error("Error fetching courses:", error);
+    }
+  };
 
+  const fetchBatches = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      console.error("No token found, authentication required");
+      return;
+    }
+    try {
+      const response = await fetch(
+        "http://13.233.33.133:3001/api/course/viewAllBatches",
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            token: token,
+          },
+        }
+      );
+      if (!response.ok)
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      const data = await response.json();
+      setBatches(data.data || []);
+    } catch (error) {
+      console.error("Error fetching batches:", error);
+    }
+  };
+
+  const handleCourseChange = (value: number) => {
+    setSelectedCourse(value);
+    setSelectedBatch(null); // Reset batch selection when course changes
+    // Filter batches based on selected course
+    const filtered = batches.filter(batch => batch.course_id === value);
+    setFilteredBatches(filtered);
+  };
 
   const openModal = (student: Student) => {
     setSelectedStudent(student);
     setModalVisible(true);
+    setSelectedCourse(null);
+    setSelectedBatch(null);
+    setFilteredBatches([]);
   };
 
   const formatDate = (date: Date | null): string | null => {
@@ -91,16 +137,15 @@ const UnassignedStudents: React.FC = () => {
   };
 
   const handleAssignCourse = async () => {
-    if (!selectedStudent || !selectedCourse || !startDate || !endDate) {
-      message.error("Please fill all fields.");
+    if (!selectedStudent || !selectedCourse || !selectedBatch) {
+      message.error("Please select a course and batch.");
       return;
     }
 
     const payload = {
       studentId: selectedStudent.student_id,
       courseId: selectedCourse,
-      startDate,
-      endDate,
+      batchId: selectedBatch
     };
 
     try {
@@ -109,9 +154,9 @@ const UnassignedStudents: React.FC = () => {
         payload,
         { headers: { token: token || "" } }
       );
-      alert("Course assigned successfully!");
+      message.success("Course assigned successfully!");
       setModalVisible(false);
-      window.location.reload()
+      window.location.reload();
     } catch (error) {
       message.error("Error assigning course.");
       console.error("Error:", error);
@@ -190,12 +235,11 @@ const UnassignedStudents: React.FC = () => {
           <strong>Student:</strong> {selectedStudent?.firstname}{" "}
           {selectedStudent?.lastname}
         </p>
-        {courses.length === 0 && <p>No courses available</p>}{" "}
-        {/* Debugging message */}
         <Select
           placeholder="Select Course"
-          style={{ width: "100%" }}
-          onChange={(value) => setSelectedCourse(value)}
+          style={{ width: "100%", marginBottom: 16 }}
+          onChange={handleCourseChange}
+          value={selectedCourse}
         >
           {courses.map((course) => (
             <Option key={course.id} value={course.id}>
@@ -203,16 +247,20 @@ const UnassignedStudents: React.FC = () => {
             </Option>
           ))}
         </Select>
-        <DatePicker
-          style={{ width: "100%", marginTop: 10 }}
-          placeholder="Start Date"
-          onChange={(date) => setStartDate(formatDate(date?.toDate() || null))}
-        />
-        <DatePicker
-          style={{ width: "100%", marginTop: 10 }}
-          placeholder="End Date"
-          onChange={(date) => setEndDate(formatDate(date?.toDate() || null))}
-        />
+        
+        <Select
+          placeholder="Select Batch"
+          style={{ width: "100%", marginBottom: 16 }}
+          onChange={(value) => setSelectedBatch(value)}
+          value={selectedBatch}
+          disabled={!selectedCourse}
+        >
+          {filteredBatches.map((batch) => (
+            <Option key={batch.batch_id} value={batch.batch_id}>
+              {batch.name}
+            </Option>
+          ))}
+        </Select>
       </Modal>
     </LayoutWrapper>
   );

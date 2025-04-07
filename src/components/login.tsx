@@ -5,6 +5,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import "./styles/signin.css";
 import borigam_profile from "../assets/borigam_profile.png";
+import { Loginapi } from "./services/restApi";
 
 const { Title } = Typography;
 
@@ -25,7 +26,7 @@ const Login = () => {
       };
 
       const response = await axios.post(
-        "http://13.233.33.133:3001/api/users/login",
+        Loginapi(),
         payload
       );
 
@@ -40,14 +41,14 @@ const Login = () => {
 
         message.success("Login successful!");
         if (
-          values.username === "samu@gmail.com" &&
+          values.username === "admin@gmail.com" &&
           values.password === "123456"
         ) {
-          navigate("/student/dashboard");
+          navigate("/dashboard");
           return; 
         }
 
-        navigate("/dashboard");
+        navigate("/student/dashboard");
       } else {
         throw new Error("No token received");
       }
