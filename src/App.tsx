@@ -7,7 +7,6 @@ import Dashboard from "./components/dashboard.tsx";
 import ViewCourse from "./components/viewCourse.tsx";
 import AddQuestions from "./components/addQuestion.tsx";
 import AddTest from "./components/addTest.tsx";
-import Settings from "./components/settings.tsx";
 import StudentDashoard from "./components/student/studentDashboard.tsx";
 import AllStudents from "./components/pages/allStudents.tsx";
 import CollageList from "./components/pages/noOfCollages.tsx";
@@ -19,6 +18,7 @@ import CompletedTest from "./components/pages/completedTest.tsx";
 import TestScreen from "./components/student/pages/newtest.tsx";
 import StudentCompletedTest from "./components/student/pages/completedTests.tsx";
 import StudyMaterial from "./components/studyMaterial.tsx";
+import ErrorHandling from "./components/settingsErrorBoundry.tsx";
 
 const App: React.FC = () => {
   return (
@@ -27,7 +27,7 @@ const App: React.FC = () => {
         <Route path="/signup" element={<SignUpForm />} />
         <Route path="/" element={<Login />} />
         <Route path="/forgotpassword" element={<ForgotPassword />} />
-        <Route path="/settings" element={<Settings />} />
+        <Route path="/settingscreen" element={<ErrorHandling/>} />
         <Route path="/study-material" element={<StudyMaterial />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/dashboard/Addquestions" element={<AddQuestions />} />

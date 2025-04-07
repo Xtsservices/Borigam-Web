@@ -71,7 +71,7 @@ const AppSidebar = () => {
             icon: (
               <SettingOutlined
                 style={{ fontSize: "30px" }}
-                onClick={handleOnClick}
+                onClick={()=> navigate("/settingscreen")} 
                 name="Settings"
               />
             ),

@@ -55,8 +55,8 @@ const Settings: React.FC = () => {
   useEffect(() => {
     fetchCourses();
     fetchTests();
+    fetchBatches();
   }, []);
-
   const fetchCourses = async () => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -90,12 +90,6 @@ const Settings: React.FC = () => {
     start_date: "",
     end_date: "",
   });
-
-  useEffect(() => {
-    fetchCourses();
-    fetchTests();
-    fetchBatches();
-  }, []);
 
   const fetchTests = async () => {
     try {
@@ -212,6 +206,7 @@ const Settings: React.FC = () => {
   };
 
   const renderTests = (filteredTests: Test[]) =>
+    Array.isArray(filteredTests) &&
     filteredTests.map((test) => (
       <div key={test.test_id} style={{ marginBottom: "20px" }}>
         <Typography.Title level={5}>{test.test_name}</Typography.Title>
@@ -222,18 +217,21 @@ const Settings: React.FC = () => {
             <List.Item>
               <div>
                 <Typography.Text strong>{question.name}</Typography.Text>
-                {question.options.length > 0 && (
-                  <List
-                    size="small"
-                    dataSource={question.options}
-                    renderItem={(option) => (
-                      <List.Item>
-                        {option.option_text}{" "}
-                        {option.is_correct && <strong>(Correct Answer)</strong>}
-                      </List.Item>
-                    )}
-                  />
-                )}
+                {Array.isArray(question.options) &&
+                  question.options.length > 0 && (
+                    <List
+                      size="small"
+                      dataSource={question.options}
+                      renderItem={(option) => (
+                        <List.Item>
+                          {option.option_text}{" "}
+                          {option.is_correct && (
+                            <strong>(Correct Answer)</strong>
+                          )}
+                        </List.Item>
+                      )}
+                    />
+                  )}
               </div>
             </List.Item>
           )}
@@ -283,19 +281,20 @@ const Settings: React.FC = () => {
               marginBottom: "16px",
             }}
           >
-            {courses.map((course) => (
-              <Button
-                key={course.id}
-                style={{
-                  width: "200px",
-                  height: "100px",
-                  fontSize: "22px",
-                  padding: "0",
-                }}
-              >
-                {course.name}
-              </Button>
-            ))}
+            {Array.isArray(courses) &&
+              courses.map((course) => (
+                <Button
+                  key={course.id}
+                  style={{
+                    width: "200px",
+                    height: "100px",
+                    fontSize: "22px",
+                    padding: "0",
+                  }}
+                >
+                  {course.name}
+                </Button>
+              ))}
           </div>
         </Card>
         <Card
@@ -329,22 +328,23 @@ const Settings: React.FC = () => {
               marginBottom: "16px",
             }}
           >
-            {batches.map((batch) => (
-              <Button
-                key={batch.batch_id}
-                style={{
-                  width: "250px",
-                  height: "120px",
-                  fontSize: "21px",
-                  textAlign: "left",
-                  padding: "10px",
-                  whiteSpace: "normal",
-                }}
-              >
-                <strong>{batch.name}</strong>
-                {batch.course_name}
-              </Button>
-            ))}
+            {Array.isArray(batches) &&
+              batches.map((batch) => (
+                <Button
+                  key={batch.batch_id}
+                  style={{
+                    width: "250px",
+                    height: "120px",
+                    fontSize: "21px",
+                    textAlign: "left",
+                    padding: "10px",
+                    whiteSpace: "normal",
+                  }}
+                >
+                  <strong>{batch.name}</strong>
+                  {batch.course_name}
+                </Button>
+              ))}
           </div>
         </Card>
 
@@ -428,7 +428,7 @@ const Settings: React.FC = () => {
               onChange={(e) =>
                 setNewBatch({ ...newBatch, course_id: Number(e.target.value) })
               }
-              style={{backgroundColor: "white", color: "black"}}
+              style={{ backgroundColor: "white", color: "black" }}
             >
               <option value="">Select Course</option>
               {courses.map((course) => (
