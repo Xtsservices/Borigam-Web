@@ -484,7 +484,7 @@ const Dashboard = () => {
               style={{ width: "120px", height: "45px", fontSize: "14px" }}
               onClick={() => navigate("/dashboard/CollageStudents")}
             >
-              Students: 20
+              Students
             </Button>
           </div>
         </Card>

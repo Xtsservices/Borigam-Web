@@ -108,7 +108,7 @@ const StudentCompletedTest = () => {
       title: 'Question',
       dataIndex: 'question_text',
       key: 'question',
-      render: (text: string, record: Answer, index: number) => (
+      render: (text: string, _record: Answer, index: number) => (
         <Text strong>{index + 1}. {text}</Text>
       ),
       width: '40%',

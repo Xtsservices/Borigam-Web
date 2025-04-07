@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Table, Spin, Button, Modal, Select, DatePicker, message } from "antd";
+import { Table, Spin, Button, Modal, Select, message } from "antd";
 import LayoutWrapper from "../../layouts/layoutWrapper";
 import axios from "axios";
 
@@ -36,8 +36,6 @@ const UnassignedStudents: React.FC = () => {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [selectedCourse, setSelectedCourse] = useState<number | null>(null);
   const [selectedBatch, setSelectedBatch] = useState<number | null>(null);
-  const [startDate, setStartDate] = useState<string | null>(null);
-  const [endDate, setEndDate] = useState<string | null>(null);
 
   const token = localStorage.getItem("token");
 
@@ -130,10 +128,6 @@ const UnassignedStudents: React.FC = () => {
     setSelectedCourse(null);
     setSelectedBatch(null);
     setFilteredBatches([]);
-  };
-
-  const formatDate = (date: Date | null): string | null => {
-    return date ? date.toISOString().split("T")[0] : null;
   };
 
   const handleAssignCourse = async () => {

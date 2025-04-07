@@ -22,15 +22,6 @@ interface Subject {
   updated_at: string;
 }
 
-interface QuestionPayload {
-  name: string;
-  type: string;
-  subject_id: number;
-  options: Array<{
-    option_text: string;
-    is_correct: boolean;
-  }>;
-}
 
 // Utility function to format dates
 const formatDate = (dateString: string) => {

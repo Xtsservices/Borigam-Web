@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Table, Spin, Button } from "antd";
 import { useNavigate } from "react-router-dom";
 import LayoutWrapper from "../../layouts/layoutWrapper";
