@@ -240,11 +240,12 @@ const AddTest = () => {
               value={selectedSubject}
               style={{ width: "100%", marginBottom: "20px" }}
             >
-              {subjects.map((subject) => (
-                <Option key={subject.id} value={subject.id}>
-                  {subject.name}
-                </Option>
-              ))}
+              {Array.isArray(subjects) &&
+                subjects.map((subject) => (
+                  <Option key={subject.id} value={subject.id}>
+                    {subject.name}
+                  </Option>
+                ))}
             </Select>
           </Form.Item>
 
@@ -255,11 +256,12 @@ const AddTest = () => {
               value={selectedBatch}
               style={{ width: "100%", marginBottom: "20px" }}
             >
-              {batches.map((batch) => (
-                <Option key={batch.batch_id} value={batch.batch_id}>
-                  {batch.name} ({batch.course_name})
-                </Option>
-              ))}
+              {Array.isArray(batches) &&
+                batches.map((batch) => (
+                  <Option key={batch.batch_id} value={batch.batch_id}>
+                    {batch.name} ({batch.course_name})
+                  </Option>
+                ))}
             </Select>
           </Form.Item>
 
@@ -280,55 +282,55 @@ const AddTest = () => {
           </Form.Item>
 
           <h3 className="text-lg font-semibold mb-2">Select Questions:</h3>
-          {questions.map((question) => (
-            <Card
-              key={question.id}
-              className="mb-4"
-              style={{
-                marginBottom: "10px",
-                borderColor: "gold",
-                borderWidth: "1px",
-              }}
-            >
-              <Checkbox
-                onChange={(e) =>
-                  handleCheckboxChange(question.id, e.target.checked)
-                }
-                checked={selectedQuestions.includes(question.id)}
+          {Array.isArray(questions) &&
+            questions.map((question) => (
+              <Card
+                key={question.id}
+                className="mb-4"
+                style={{
+                  marginBottom: "10px",
+                  borderColor: "gold",
+                  borderWidth: "1px",
+                }}
               >
-                <div style={{ marginLeft: "20px", fontSize: "20px" }}>
-                  {question.name}
-                </div>
+                <Checkbox
+                  onChange={(e) =>
+                    handleCheckboxChange(question.id, e.target.checked)
+                  }
+                  checked={selectedQuestions.includes(question.id)}
+                >
+                  <div style={{ marginLeft: "20px", fontSize: "20px" }}>
+                    {question.name}
+                  </div>
 
-                {/* 👇 Add image if exists */}
-                {question.image && (
-                  <img
-                    src={question.image}
-                    alt="Question"
-                    style={{
-                      width: "200px",
-                      height: "200px",
-                      objectFit: "cover",
-                      marginLeft: "20px",
-                      marginTop: "10px",
-                      borderRadius: "10px",
-                      border: "1px solid #ccc",
-                    }}
-                  />
-                )}
+                  {question.image && (
+                    <img
+                      src={question.image}
+                      alt="Question"
+                      style={{
+                        width: "200px",
+                        height: "200px",
+                        objectFit: "cover",
+                        marginLeft: "20px",
+                        marginTop: "10px",
+                        borderRadius: "10px",
+                        border: "1px solid #ccc",
+                      }}
+                    />
+                  )}
 
-                {/* 👇 Show options */}
-                {question.options.map((option) => (
-                  <p
-                    style={{ marginLeft: "20px", fontSize: "15px" }}
-                    key={option.option_id}
-                  >
-                    {option.option_text}
-                  </p>
-                ))}
-              </Checkbox>
-            </Card>
-          ))}
+                  {Array.isArray(question.options) &&
+                    question.options.map((option) => (
+                      <p
+                        style={{ marginLeft: "20px", fontSize: "15px" }}
+                        key={option.option_id}
+                      >
+                        {option.option_text}
+                      </p>
+                    ))}
+                </Checkbox>
+              </Card>
+            ))}
 
           <Button
             style={{ marginTop: "20px" }}
