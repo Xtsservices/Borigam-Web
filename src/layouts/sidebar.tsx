@@ -30,11 +30,6 @@ const AppSidebar = () => {
     setIsModalOpen(false);
   };
 
-  const handleOnClick = () => {
-    console.log("123456");
-    navigate("/settings");
-  };
-
   return (
     <Sider
       width={80}
