@@ -26,6 +26,9 @@ interface CompletedTest {
   subject_name: string;
   course_name?: string;
   batch_name?: string;
+  start_time?: number;
+  created_at?: number;
+  end_time?: number;
 }
 
 interface Option {
@@ -134,6 +137,15 @@ const StudentCompletedTest = () => {
     }
   };
 
+  const formatDate = (timestamp?: number): string => {
+    if (!timestamp) return "-";
+    const date = new Date(timestamp);
+    const day = date.getDate().toString().padStart(2, "0");
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+  };
+
   const testColumns = [
     {
       title: "Test Name",
@@ -149,6 +161,18 @@ const StudentCompletedTest = () => {
       title: "batch",
       dataIndex: "batch_name",
       key: "batch_name",
+    },
+    {
+      title: "Test Date",
+      dataIndex: "start_time",
+      key: "start_time",
+      render: (timestamp?: number) => formatDate(timestamp),
+    },
+    {
+      title: "Created Date",
+      dataIndex: "created_at",
+      key: "created_at",
+      render: (timestamp?: number) => formatDate(timestamp),
     },
     {
       title: "Score",
