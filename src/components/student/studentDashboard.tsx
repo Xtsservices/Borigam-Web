@@ -46,7 +46,7 @@ const StudentDashboard: React.FC = () => {
       setLoading(true);
       setError(null);
       const response = await fetch(
-        "http://localhost:3001/api/studentdashbaord/getStudentTestStatus",
+        "http://13.233.33.133:3001/api/studentdashbaord/getStudentTestStatus",
         {
           method: "GET",
           headers: {

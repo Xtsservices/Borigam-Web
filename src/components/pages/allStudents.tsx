@@ -20,7 +20,7 @@ const AllStudents: React.FC = () => {
   // Fetch student data from API
   useEffect(() => {
     setLoading(true);
-    fetch("http://localhost:3001/api/student/getAllStudents", {
+    fetch("http://13.233.33.133:3001/api/student/getAllStudents", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

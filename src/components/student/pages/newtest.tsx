@@ -77,7 +77,7 @@ const TestScreen: React.FC = () => {
     setLoading(true);
     axios
       .get(
-        "http://localhost:3001/api/studentdashbaord/getStudentTestStatus",
+        "http://13.233.33.133:3001/api/studentdashbaord/getStudentTestStatus",
         axiosConfig
       )
       .then((response) => {
@@ -111,7 +111,7 @@ const TestScreen: React.FC = () => {
 
     axios
       .get(
-        `http://localhost:3001/api/question/viewTestByID?id=${test.test_id}`,
+        `http://13.233.33.133:3001/api/question/viewTestByID?id=${test.test_id}`,
         axiosConfig
       )
       .then((response) => {
@@ -150,7 +150,7 @@ const TestScreen: React.FC = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:3001/api/testsubmission/submitTest",
+        "http://13.233.33.133:3001/api/testsubmission/submitTest",
         payload,
         axiosConfig
       );

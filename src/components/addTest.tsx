@@ -66,7 +66,7 @@ const AddTest = () => {
     const fetchQuestions = async () => {
       try {
         const response = await fetch(
-          "http://localhost:3001/api/question/getAllQuestions",
+          "http://13.233.33.133:3001/api/question/getAllQuestions",
           {
             headers: {
               "Content-Type": "application/json",
@@ -88,7 +88,7 @@ const AddTest = () => {
     const fetchCourses = async () => {
       try {
         const response = await fetch(
-          "http://localhost:3001/api/course/getCourses",
+          "http://13.233.33.133:3001/api/course/getCourses",
           {
             headers: {
               "Content-Type": "application/json",
@@ -109,7 +109,7 @@ const AddTest = () => {
     const fetchBatches = async () => {
       try {
         const response = await fetch(
-          "http://localhost:3001/api/course/viewAllBatches",
+          "http://13.233.33.133:3001/api/course/viewAllBatches",
           {
             headers: {
               "Content-Type": "application/json",
@@ -205,7 +205,7 @@ const AddTest = () => {
 
     try {
       const response = await fetch(
-        "http://localhost:3001/api/question/createTest",
+        "http://13.233.33.133:3001/api/question/createTest",
         {
           method: "POST",
           headers: {

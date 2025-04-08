@@ -68,7 +68,7 @@ const Settings: React.FC = () => {
     }
     try {
       const response = await fetch(
-        "http://localhost:3001/api/course/getCourses",
+        "http://13.233.33.133:3001/api/course/getCourses",
         {
           method: "GET",
           headers: {
@@ -104,7 +104,7 @@ const Settings: React.FC = () => {
   const fetchTests = async () => {
     try {
       const response = await fetch(
-        "http://localhost:3001/api/question/viewAllTests",
+        "http://13.233.33.133:3001/api/question/viewAllTests",
         {
           method: "GET",
           headers: {
@@ -125,7 +125,7 @@ const Settings: React.FC = () => {
   const fetchBatches = async () => {
     try {
       const response = await fetch(
-        "http://localhost:3001/api/course/viewAllBatches",
+        "http://13.233.33.133:3001/api/course/viewAllBatches",
         {
           headers: {
             "Content-Type": "application/json",
@@ -154,7 +154,7 @@ const Settings: React.FC = () => {
 
     try {
       const response = await fetch(
-        "http://localhost:3001/api/course/createBatch",
+        "http://13.233.33.133:3001/api/course/createBatch",
         {
           method: "POST",
           headers: {
@@ -191,7 +191,7 @@ const Settings: React.FC = () => {
 
     try {
       const response = await fetch(
-        "http://localhost:3001/api/course/createCourse",
+        "http://13.233.33.133:3001/api/course/createCourse",
         {
           method: "POST",
           headers: {
@@ -238,10 +238,10 @@ const Settings: React.FC = () => {
       let body = {};
 
       if (editType === "course") {
-        url = `http://localhost:3001/api/course/updateCourse/${editData.id}`;
+        url = `http://13.233.33.133:3001/api/course/updateCourse/${editData.id}`;
         body = { name: editData.name };
       } else {
-        url = `http://localhost:3001/api/course/updateBatch/${editData.id}`;
+        url = `http://13.233.33.133:3001/api/course/updateBatch/${editData.id}`;
         body = { name: editData.name };
       }
 
@@ -281,8 +281,8 @@ const Settings: React.FC = () => {
     try {
       const url =
         type === "course"
-          ? `http://localhost:3001/api/course/deleteCourse/${id}`
-          : `http://localhost:3001/api/course/deleteBatch/${id}`;
+          ? `http://13.233.33.133:3001/api/course/deleteCourse/${id}`
+          : `http://13.233.33.133:3001/api/course/deleteBatch/${id}`;
 
       const response = await fetch(url, {
         method: "DELETE",
