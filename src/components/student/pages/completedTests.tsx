@@ -1,8 +1,32 @@
 import React, { useEffect, useState } from "react";
-import { Table, Card, Typography, Spin, Alert, Tag, Space } from "antd";
+import {
+  Table,
+  Card,
+  Typography,
+  Spin,
+  Alert,
+  Tag,
+  Space,
+  message,
+} from "antd";
 import StudentLayoutWrapper from "../layouts/studentlayoutWrapper";
 
 const { Title, Text } = Typography;
+
+interface CompletedTest {
+  test_id: number;
+  test_name: string;
+  duration: number;
+  total_questions: number;
+  attempted: number;
+  correct: number;
+  wrong: number;
+  final_score: string;
+  final_result: string;
+  subject_name: string;
+  course_name?: string;
+  batch_name?: string;
+}
 
 interface Option {
   option_id: number;
@@ -31,22 +55,20 @@ interface TestResult {
 
 const StudentCompletedTest = () => {
   const [loading, setLoading] = useState<boolean>(true);
-  const [result, setResult] = useState<TestResult | null>(null);
+  const [tests, setTests] = useState<CompletedTest[]>([]);
+  const [selectedResult, setSelectedResult] = useState<TestResult | null>(null);
   const [answers, setAnswers] = useState<Answer[]>([]);
   const [error, setError] = useState<string | null>(null);
-
   const token = localStorage.getItem("token");
 
   useEffect(() => {
-    fetchTestResult();
+    fetchCompletedTests();
   }, []);
 
-  const fetchTestResult = async () => {
+  const fetchCompletedTests = async () => {
     try {
-      setLoading(true);
-      setError(null);
       const response = await fetch(
-        "http://13.233.33.133:3001/api/testsubmission/getTestResultById?test_id=2",
+        "http://localhost:3001/api/studentdashbaord/getStudentTestStatus",
         {
           method: "GET",
           headers: {
@@ -56,13 +78,24 @@ const StudentCompletedTest = () => {
         }
       );
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch test result");
-      }
+      if (!response.ok) throw new Error("Failed to fetch completed tests");
 
       const data = await response.json();
-      setResult(data.result);
-      setAnswers(data.answers);
+
+      const completed = data?.data?.tests?.completdTests || [];
+      const batches = data?.data?.batches || [];
+
+      // Map batches by any custom logic — here we're matching by index (as placeholder)
+      const enrichedTests = completed.map((test: any, index: number) => {
+        const batch = batches[index] || {};
+        return {
+          ...test,
+          batch_id: batch.batch_id,
+          batch_name: batch.batch_name,
+        };
+      });
+
+      setTests(enrichedTests);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
@@ -70,134 +103,210 @@ const StudentCompletedTest = () => {
     }
   };
 
-  const renderOptions = (record: Answer) => {
-    return (
-      <Space direction="vertical" size={4}>
-        {record.options.map((option) => {
-          let tagColor = 'default';
-          let tagStyle: React.CSSProperties = {};
-          
-          // Student's selected answer
-          if (option.option_id === record.submitted_option_id) {
-            tagColor = record.is_correct ? 'green' : 'red';
-            tagStyle = { fontWeight: 'bold' };
-          } 
-          // Correct answer (if not selected by student)
-          else if (option.is_correct) {
-            tagColor = 'blue';
-          }
+  const fetchTestResultById = async (test_id: number) => {
+    try {
+      setLoading(true);
+      setSelectedResult(null);
+      setAnswers([]);
 
-          return (
-            <Tag 
-              color={tagColor}
-              style={tagStyle}
-              key={option.option_id}
-            >
-              {option.option_text}
-              {option.option_id === record.submitted_option_id && " (Your Answer)"}
-              {option.is_correct && option.option_id !== record.submitted_option_id && " (Correct Answer)"}
-            </Tag>
-          );
-        })}
-      </Space>
-    );
+      const response = await fetch(
+        `http://localhost:3001/api/testsubmission/getTestResultById?test_id=${test_id}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            token: token || "",
+          },
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to fetch test result");
+
+      const data = await response.json();
+      setSelectedResult(data.result);
+      setAnswers(data.answers);
+    } catch (err) {
+      message.error(
+        err instanceof Error ? err.message : "Failed to load test result"
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const columns = [
+  const testColumns = [
     {
-      title: 'Question',
-      dataIndex: 'question_text',
-      key: 'question',
-      render: (text: string, _record: Answer, index: number) => (
-        <Text strong>{index + 1}. {text}</Text>
+      title: "Test Name",
+      dataIndex: "test_name",
+      key: "test_name",
+    },
+    {
+      title: "Course",
+      dataIndex: "course_name",
+      key: "course_name",
+    },
+    {
+      title: "batch",
+      dataIndex: "batch_name",
+      key: "batch_name",
+    },
+    {
+      title: "Score",
+      dataIndex: "final_score",
+      key: "final_score",
+      render: (text: string) => `${text}%`,
+    },
+    {
+      title: "Result",
+      dataIndex: "final_result",
+      key: "final_result",
+      render: (text: string) => (
+        <Tag color={text === "Pass" ? "green" : "red"}>{text}</Tag>
       ),
-      width: '40%',
+    },
+  ];
+
+  const questionColumns = [
+    {
+      title: "Question",
+      dataIndex: "question_text",
+      key: "question_text",
+      render: (text: string, _record: Answer, index: number) => (
+        <Text strong>
+          {index + 1}. {text}
+        </Text>
+      ),
+      width: "40%",
     },
     {
-      title: 'Options',
-      key: 'options',
-      render: renderOptions,
-      width: '50%',
-    },
-    {
-      title: 'Result',
-      key: 'result',
+      title: "Options",
+      key: "options",
       render: (record: Answer) => (
-        <Tag color={record.is_correct ? 'green' : 'red'}>
-          {record.is_correct ? 'Correct' : 'Incorrect'}
+        <Space direction="vertical">
+          {record.options.map((option) => {
+            let color = "default";
+            let style: React.CSSProperties = {};
+            const isSubmitted = option.option_id === record.submitted_option_id;
+
+            if (isSubmitted) {
+              color = record.is_correct ? "green" : "red";
+              style = { fontWeight: "bold" };
+            } else if (option.is_correct && !record.is_correct) {
+              color = "blue";
+            }
+
+            return (
+              <Tag color={color} style={style} key={option.option_id}>
+                {option.option_text}
+                {isSubmitted && " (Your Answer)"}
+                {option.is_correct && !isSubmitted && " (Correct Answer)"}
+              </Tag>
+            );
+          })}
+        </Space>
+      ),
+      width: "50%",
+    },
+    {
+      title: "Result",
+      key: "result",
+      align: "center" as const,
+      render: (record: Answer) => (
+        <Tag color={record.is_correct ? "green" : "red"}>
+          {record.is_correct ? "Correct" : "Incorrect"}
         </Tag>
       ),
-      width: '10%',
-      align: 'center' as const,
     },
   ];
 
   return (
-    <StudentLayoutWrapper pageTitle="BORIGAM / Test Result">
+    <StudentLayoutWrapper pageTitle="BORIGAM / Completed Tests">
       <div style={{ padding: "24px" }}>
-        <Title level={2}>Test Result</Title>
+        <Title level={2}>Completed Tests</Title>
 
         {error && (
-          <Alert 
-            message="Error" 
-            description={error} 
-            type="error" 
-            showIcon 
-            style={{ marginBottom: 24 }} 
+          <Alert
+            message="Error"
+            description={error}
+            type="error"
+            showIcon
+            style={{ marginBottom: 24 }}
           />
         )}
 
         {loading ? (
-          <Spin 
-            size="large" 
-            style={{ 
-              display: "flex", 
-              justifyContent: "center", 
-              marginTop: "40px" 
-            }} 
+          <Spin
+            size="large"
+            style={{ display: "flex", justifyContent: "center", marginTop: 40 }}
           />
         ) : (
           <>
-            {result && (
-              <Card 
-                title="Test Summary" 
-                style={{ marginBottom: 24 }}
-              >
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
-                  <div>
-                    <Text strong>Total Questions:</Text> {result.total_questions}
-                  </div>
-                  <div>
-                    <Text strong>Attempted:</Text> {result.attempted}
-                  </div>
-                  <div>
-                    <Text strong>Correct:</Text> {result.correct}
-                  </div>
-                  <div>
-                    <Text strong>Wrong:</Text> {result.wrong}
-                  </div>
-                  <div>
-                    <Text strong>Score:</Text> {result.final_score}%
-                  </div>
-                  <div>
-                    <Text strong>Result:</Text>{" "}
-                    <Tag color={result.final_result === "Pass" ? "green" : "red"}>
-                      {result.final_result}
-                    </Tag>
-                  </div>
-                </div>
-              </Card>
-            )}
-
-            <Card title="Question Details">
+            <Card title="Test List" style={{ marginBottom: 24 }}>
               <Table
-                dataSource={answers}
-                columns={columns}
-                rowKey="question_id"
-                pagination={false}
+                dataSource={tests}
+                columns={testColumns}
+                rowKey="test_id"
                 bordered
+                onRow={(record) => ({
+                  onClick: () => fetchTestResultById(record.test_id),
+                })}
+                pagination={false}
+                style={{ fontSize: 14, width: "100%", cursor: "pointer" }}
               />
             </Card>
+
+            {selectedResult && (
+              <>
+                <Card title="Test Summary" style={{ marginBottom: 24 }}>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(3, 1fr)",
+                      gap: "16px",
+                    }}
+                  >
+                    <div>
+                      <Text strong>Total Questions:</Text>{" "}
+                      {selectedResult.total_questions}
+                    </div>
+                    <div>
+                      <Text strong>Attempted:</Text> {selectedResult.attempted}
+                    </div>
+                    <div>
+                      <Text strong>Correct:</Text> {selectedResult.correct}
+                    </div>
+                    <div>
+                      <Text strong>Wrong:</Text> {selectedResult.wrong}
+                    </div>
+                    <div>
+                      <Text strong>Score:</Text> {selectedResult.final_score}%
+                    </div>
+                    <div>
+                      <Text strong>Result:</Text>{" "}
+                      <Tag
+                        color={
+                          selectedResult.final_result === "Pass"
+                            ? "green"
+                            : "red"
+                        }
+                      >
+                        {selectedResult.final_result}
+                      </Tag>
+                    </div>
+                  </div>
+                </Card>
+
+                <Card title="Question Details">
+                  <Table
+                    dataSource={answers}
+                    columns={questionColumns}
+                    rowKey="question_id"
+                    pagination={false}
+                    bordered
+                  />
+                </Card>
+              </>
+            )}
           </>
         )}
       </div>

@@ -9,7 +9,9 @@ import {
   Input,
   Form,
   message,
+  Popconfirm,
 } from "antd";
+import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import LayoutWrapper from "../layouts/layoutWrapper";
 
 const { TabPane } = Tabs;
@@ -57,6 +59,7 @@ const Settings: React.FC = () => {
     fetchTests();
     fetchBatches();
   }, []);
+
   const fetchCourses = async () => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -65,7 +68,7 @@ const Settings: React.FC = () => {
     }
     try {
       const response = await fetch(
-        "http://13.233.33.133:3001/api/course/getCourses",
+        "http://localhost:3001/api/course/getCourses",
         {
           method: "GET",
           headers: {
@@ -82,6 +85,7 @@ const Settings: React.FC = () => {
       console.error("Error fetching courses:", error);
     }
   };
+
   const [batches, setBatches] = useState<Batch[]>([]);
   const [isBatchModalVisible, setIsBatchModalVisible] = useState(false);
   const [newBatch, setNewBatch] = useState({
@@ -90,11 +94,17 @@ const Settings: React.FC = () => {
     start_date: "",
     end_date: "",
   });
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const [editType, setEditType] = useState<"course" | "batch" | null>(null);
+  const [editData, setEditData] = useState<{ id: number; name: string }>({
+    id: 0,
+    name: "",
+  });
 
   const fetchTests = async () => {
     try {
       const response = await fetch(
-        "http://13.233.33.133:3001/api/question/viewAllTests",
+        "http://localhost:3001/api/question/viewAllTests",
         {
           method: "GET",
           headers: {
@@ -111,10 +121,11 @@ const Settings: React.FC = () => {
       console.error("Error fetching tests:", error);
     }
   };
+
   const fetchBatches = async () => {
     try {
       const response = await fetch(
-        "http://13.233.33.133:3001/api/course/viewAllBatches",
+        "http://localhost:3001/api/course/viewAllBatches",
         {
           headers: {
             "Content-Type": "application/json",
@@ -143,7 +154,7 @@ const Settings: React.FC = () => {
 
     try {
       const response = await fetch(
-        "http://13.233.33.133:3001/api/course/createBatch",
+        "http://localhost:3001/api/course/createBatch",
         {
           method: "POST",
           headers: {
@@ -180,7 +191,7 @@ const Settings: React.FC = () => {
 
     try {
       const response = await fetch(
-        "http://13.233.33.133:3001/api/course/createCourse",
+        "http://localhost:3001/api/course/createCourse",
         {
           method: "POST",
           headers: {
@@ -198,10 +209,102 @@ const Settings: React.FC = () => {
       message.success("Course added successfully");
       setCourseName("");
       setIsModalVisible(false);
-      fetchCourses(); // Refresh course list
+      fetchCourses();
     } catch (error) {
       console.error("Error creating course:", error);
       message.error("Error creating course");
+    }
+  };
+
+  const handleEditClick = (
+    type: "course" | "batch",
+    id: number,
+    name: string
+  ) => {
+    setEditType(type);
+    setEditData({ id, name });
+    setIsEditModalVisible(true);
+  };
+
+  const handleEditSubmit = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      message.error("Authentication required");
+      return;
+    }
+
+    try {
+      let url = "";
+      let body = {};
+
+      if (editType === "course") {
+        url = `http://localhost:3001/api/course/updateCourse/${editData.id}`;
+        body = { name: editData.name };
+      } else {
+        url = `http://localhost:3001/api/course/updateBatch/${editData.id}`;
+        body = { name: editData.name };
+      }
+
+      const response = await fetch(url, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          token,
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok) throw new Error("Failed to update");
+
+      message.success(`${editType} updated successfully`);
+      setIsEditModalVisible(false);
+
+      // Refresh data
+      if (editType === "course") {
+        fetchCourses();
+      } else {
+        fetchBatches();
+      }
+    } catch (error) {
+      console.error(`Error updating ${editType}:`, error);
+      message.error(`Error updating ${editType}`);
+    }
+  };
+
+  const handleDelete = async (type: "course" | "batch", id: number) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      message.error("Authentication required");
+      return;
+    }
+
+    try {
+      const url =
+        type === "course"
+          ? `http://localhost:3001/api/course/deleteCourse/${id}`
+          : `http://localhost:3001/api/course/deleteBatch/${id}`;
+
+      const response = await fetch(url, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          token,
+        },
+      });
+
+      if (!response.ok) throw new Error("Failed to delete");
+
+      message.success(`${type} deleted successfully`);
+
+      // Refresh data
+      if (type === "course") {
+        fetchCourses();
+      } else {
+        fetchBatches();
+      }
+    } catch (error) {
+      console.error(`Error deleting ${type}:`, error);
+      message.error(`Error deleting ${type}`);
     }
   };
 
@@ -283,17 +386,47 @@ const Settings: React.FC = () => {
           >
             {Array.isArray(courses) &&
               courses.map((course) => (
-                <Button
-                  key={course.id}
-                  style={{
-                    width: "200px",
-                    height: "100px",
-                    fontSize: "22px",
-                    padding: "0",
-                  }}
-                >
-                  {course.name}
-                </Button>
+                <div key={course.id} style={{ position: "relative" }}>
+                  <Button
+                    style={{
+                      width: "200px",
+                      height: "100px",
+                      fontSize: "22px",
+                      padding: "0",
+                    }}
+                  >
+                    {course.name}
+                  </Button>
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      right: 0,
+                      display: "flex",
+                    }}
+                  >
+                    <Button
+                      type="text"
+                      icon={<EditOutlined />}
+                      style={{ color: "#8B5EAB" }}
+                      onClick={() =>
+                        handleEditClick("course", course.id, course.name)
+                      }
+                    />
+                    <Popconfirm
+                      title="Are you sure to delete this course?"
+                      onConfirm={() => handleDelete("course", course.id)}
+                      okText="Yes"
+                      cancelText="No"
+                    >
+                      <Button
+                        type="text"
+                        icon={<DeleteOutlined />}
+                        style={{ color: "#ff4d4f" }}
+                      />
+                    </Popconfirm>
+                  </div>
+                </div>
               ))}
           </div>
         </Card>
@@ -330,20 +463,51 @@ const Settings: React.FC = () => {
           >
             {Array.isArray(batches) &&
               batches.map((batch) => (
-                <Button
-                  key={batch.batch_id}
-                  style={{
-                    width: "250px",
-                    height: "120px",
-                    fontSize: "21px",
-                    textAlign: "left",
-                    padding: "10px",
-                    whiteSpace: "normal",
-                  }}
-                >
-                  <strong>{batch.name}</strong>
-                  {batch.course_name}
-                </Button>
+                <div key={batch.batch_id} style={{ position: "relative" }}>
+                  <Button
+                    style={{
+                      width: "250px",
+                      height: "120px",
+                      fontSize: "21px",
+                      textAlign: "left",
+                      padding: "10px",
+                      whiteSpace: "normal",
+                    }}
+                  >
+                    <strong>{batch.name}</strong>
+                    <br />
+                    {batch.course_name}
+                  </Button>
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      right: 0,
+                      display: "flex",
+                    }}
+                  >
+                    <Button
+                      type="text"
+                      icon={<EditOutlined />}
+                      style={{ color: "#8B5EAB" }}
+                      onClick={() =>
+                        handleEditClick("batch", batch.batch_id, batch.name)
+                      }
+                    />
+                    <Popconfirm
+                      title="Are you sure to delete this batch?"
+                      onConfirm={() => handleDelete("batch", batch.batch_id)}
+                      okText="Yes"
+                      cancelText="No"
+                    >
+                      <Button
+                        type="text"
+                        icon={<DeleteOutlined />}
+                        style={{ color: "#ff4d4f" }}
+                      />
+                    </Popconfirm>
+                  </div>
+                </div>
               ))}
           </div>
         </Card>
@@ -404,6 +568,8 @@ const Settings: React.FC = () => {
           </Form.Item>
         </Form>
       </Modal>
+
+      {/* Batch Modal */}
       <Modal
         title="Add New Batch"
         visible={isBatchModalVisible}
@@ -464,6 +630,29 @@ const Settings: React.FC = () => {
                     .join("-"),
                 })
               }
+            />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      {/* Edit Modal */}
+      <Modal
+        title={`Edit ${editType}`}
+        visible={isEditModalVisible}
+        onCancel={() => setIsEditModalVisible(false)}
+        onOk={handleEditSubmit}
+        okText="Save Changes"
+      >
+        <Form layout="vertical">
+          <Form.Item
+            label={`${editType === "course" ? "Course" : "Batch"} Name`}
+          >
+            <Input
+              value={editData.name}
+              onChange={(e) =>
+                setEditData({ ...editData, name: e.target.value })
+              }
+              placeholder={`Enter ${editType} name`}
             />
           </Form.Item>
         </Form>

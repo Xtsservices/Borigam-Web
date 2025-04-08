@@ -19,6 +19,7 @@ import TestScreen from "./components/student/pages/newtest.tsx";
 import StudentCompletedTest from "./components/student/pages/completedTests.tsx";
 import StudyMaterial from "./components/studyMaterial.tsx";
 import ErrorHandling from "./components/settingsErrorBoundry.tsx";
+import CollegeDashboard from "./components/college/collegeDashboard.tsx";
 
 const App: React.FC = () => {
   return (
@@ -49,6 +50,10 @@ const App: React.FC = () => {
         <Route path="/student/dashboard" element={<StudentDashoard />} />
         <Route path="/student/TestScreen" element={<TestScreen />} />
         <Route path="/student/CompletedTest" element={<StudentCompletedTest />} />
+
+        {/* Collage */}
+
+        <Route path="/college/dashboard" element={<CollegeDashboard />} />
 
       </Routes>
     </Router>

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Table, Button, Card, Row, Col, Spin, Alert } from "antd";
 import StudentLayoutWrapper from "./layouts/studentlayoutWrapper";
 import { useNavigate } from "react-router-dom";
+import { Modal, message } from "antd";
 
 interface StudentData {
   student_id: number;
@@ -35,6 +36,8 @@ const StudentDashboard: React.FC = () => {
   const [studentData, setStudentData] = useState<StudentData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+const [selectedTestId, setSelectedTestId] = useState<number | null>(null);
   const token = localStorage.getItem("token");
 
   useEffect(() => {
@@ -46,7 +49,7 @@ const StudentDashboard: React.FC = () => {
       setLoading(true);
       setError(null);
       const response = await fetch(
-        "http://13.233.33.133:3001/api/studentdashbaord/getStudentTestStatus",
+        "http://localhost:3001/api/studentdashbaord/getStudentTestStatus",
         {
           method: "GET",
           headers: {
@@ -169,7 +172,7 @@ const StudentDashboard: React.FC = () => {
                     style={{ marginBottom: "10px" }}
                     onClick={() => navigate("/student/CompletedTest")}
                   >
-                    Completed Tests ({studentData?.tests.completdTests.length || 0})
+                    Completed Tests 
                   </Button>
                 </Col>
                 <Col span={12}>
@@ -179,7 +182,7 @@ const StudentDashboard: React.FC = () => {
                     style={{ marginBottom: "10px" }}
                     onClick={() => navigate("/student/TestScreen")}
                   >
-                    New Test ({studentData?.tests.openTest.length || 0})
+                    New Test
                   </Button>
                 </Col>
               </Row>

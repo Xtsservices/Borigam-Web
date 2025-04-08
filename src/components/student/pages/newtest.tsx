@@ -1,5 +1,18 @@
 import React, { useState, useEffect } from "react";
-import { Card, Radio, Button, Typography, Modal, Table, message } from "antd";
+import {
+  Card,
+  Radio,
+  Button,
+  Typography,
+  Modal,
+  Table,
+  message,
+  List,
+  Row,
+  Col,
+  Space,
+  Tag,
+} from "antd";
 import StudentLayoutWrapper from "../layouts/studentlayoutWrapper";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -20,6 +33,24 @@ interface Question {
   options: Option[];
 }
 
+interface Test {
+  test_id: number;
+  test_name: string;
+  duration: number;
+  created_at: string;
+  start_date: string;
+  end_date: string;
+  course_id: number | null;
+  course_name: string | null;
+  result_id: number | null;
+  total_questions: number | null;
+  attempted: number | null;
+  correct: number | null;
+  wrong: number | null;
+  final_score: string | null;
+  final_result: string | null;
+}
+
 const TestScreen: React.FC = () => {
   const [timeLeft, setTimeLeft] = useState(30 * 60);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -31,46 +62,70 @@ const TestScreen: React.FC = () => {
   const [testId, setTestId] = useState<number | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [testResult, setTestResult] = useState<any>(null);
+  const [openTests, setOpenTests] = useState<Test[]>([]);
+  const [selectedTest, setSelectedTest] = useState<Test | null>(null);
+  const [showTestList, setShowTestList] = useState(false);
 
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
   const axiosConfig = { headers: { token: token } };
 
   useEffect(() => {
+    fetchTestStatus();
+  }, []);
+
+  const fetchTestStatus = () => {
+    setLoading(true);
     axios
-      .get("http://13.233.33.133:3001/api/question/viewAllTests", axiosConfig)
+      .get(
+        "http://localhost:3001/api/studentdashbaord/getStudentTestStatus",
+        axiosConfig
+      )
       .then((response) => {
-        if (response.data.data.length > 0) {
-          setTestId(response.data.data[0].test_id);
+        console.log("Test status response:", response.data);
+        const openTestsData = response.data?.data?.tests?.openTests || [];
+        setOpenTests(openTestsData);
+
+        if (openTestsData.length === 1) {
+          // If only one open test, load it directly
+          handleTestSelect(openTestsData[0]);
+        } else if (openTestsData.length > 1) {
+          // If multiple open tests, show the list
+          setShowTestList(true);
+        } else {
+          // No open tests
+          message.info("No open tests available at this time");
         }
+        setLoading(false);
       })
-      .catch((error) => console.error("Error fetching test ID:", error));
-  }, []);
+      .catch((error) => {
+        console.error("Error fetching test status:", error);
+        setLoading(false);
+      });
+  };
 
-  useEffect(() => {
-    if (testId) {
-      axios
-        .get(
-          `http://13.233.33.133:3001/api/question/viewTestByID?id=${testId}`,
-          axiosConfig
-        )
-        .then((response) => {
-          setQuestions(response.data.data.questions || []);
-          setLoading(false);
-        })
-        .catch((error) => {
-          console.error("Error fetching questions:", error);
-          setLoading(false);
-        });
-    }
-  }, [testId]);
+  const handleTestSelect = (test: Test) => {
+    setSelectedTest(test);
+    setTestId(test.test_id);
+    setLoading(true);
+    setShowTestList(false);
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft((prevTime) => (prevTime > 0 ? prevTime - 1 : 0));
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
+    axios
+      .get(
+        `http://localhost:3001/api/question/viewTestByID?id=${test.test_id}`,
+        axiosConfig
+      )
+      .then((response) => {
+        setQuestions(response.data.data.questions || []);
+        // Set timer based on test duration (convert minutes to seconds)
+        setTimeLeft(test.duration * 60);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching questions:", error);
+        setLoading(false);
+      });
+  };
 
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -96,7 +151,7 @@ const TestScreen: React.FC = () => {
 
     try {
       const response = await axios.post(
-        "http://13.233.33.133:3001/api/testsubmission/submitTest",
+        "http://localhost:3001/api/testsubmission/submitTest",
         payload,
         axiosConfig
       );
@@ -118,19 +173,136 @@ const TestScreen: React.FC = () => {
     navigate("/student/dashboard");
   };
 
-  if (loading) return <Text>Loading test...</Text>;
-  if (!testId || questions.length === 0)
-    return <Text>No questions available</Text>;
+  const formatDate = (timestamp: string) => {
+    return new Date(parseInt(timestamp) * 1000).toLocaleString();
+  };
 
   const currentQuestion: Question | undefined = questions[currentQuestionIndex];
-  if (!currentQuestion) return <Text>No questions available</Text>;
+
+  if (loading) {
+    return (
+      <StudentLayoutWrapper pageTitle="Test">
+        <div style={{ padding: "20px", textAlign: "center" }}>
+          <Text>Loading...</Text>
+        </div>
+      </StudentLayoutWrapper>
+    );
+  }
+
+  if (showTestList) {
+    return (
+      <StudentLayoutWrapper pageTitle="Available Tests">
+        <div style={{ padding: "20px" }}>
+          <Title
+            level={2}
+            style={{ textAlign: "center", marginBottom: "24px" }}
+          >
+            Available Tests
+          </Title>
+          <Row gutter={[16, 16]}>
+            {openTests.map((test) => (
+              <Col xs={24} sm={12} md={8} lg={6} key={test.test_id}>
+                <Card
+                  title={test.test_name}
+                  bordered={true}
+                  hoverable
+                  style={{ height: "100%" }}
+                  actions={[
+                    <Button
+                      type="primary"
+                      onClick={() => handleTestSelect(test)}
+                    >
+                      Start Test
+                    </Button>,
+                  ]}
+                >
+                  <Space direction="vertical" size="middle">
+                    <div>
+                      <Text strong>Duration: </Text>
+                      <Text>{test.duration} minutes</Text>
+                    </div>
+                    <div>
+                      <Text strong>Course: </Text>
+                      <Text>{test.course_name || "General"}</Text>
+                    </div>
+                    <div>
+                      <Text strong>Available Until: </Text>
+                      <Text>{formatDate(test.end_date)}</Text>
+                    </div>
+                    {test.total_questions && (
+                      <div>
+                        <Text strong>Questions: </Text>
+                        <Text>{test.total_questions}</Text>
+                      </div>
+                    )}
+                    {test.final_result && (
+                      <Tag
+                        color={
+                          test.final_result === "Pass" ? "green" : "volcano"
+                        }
+                      >
+                        {test.final_result}
+                      </Tag>
+                    )}
+                  </Space>
+                </Card>
+              </Col>
+            ))}
+          </Row>
+        </div>
+      </StudentLayoutWrapper>
+    );
+  }
+
+  if (openTests.length === 0) {
+    return (
+      <StudentLayoutWrapper pageTitle="Test">
+        <div
+          style={{
+            height: "70vh",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            flexDirection: "column",
+          }}
+        >
+          <Card
+            style={{
+              textAlign: "center",
+              padding: "40px",
+              border: "2px dashed #FFA500",
+              borderRadius: "16px",
+              backgroundColor: "#fffbe6",
+            }}
+          >
+            <Title level={2} style={{ color: "#fa8c16" }}>
+              No Open Tests Available
+            </Title>
+            <Text type="secondary">
+              Please check back later or contact your instructor.
+            </Text>
+          </Card>
+        </div>
+      </StudentLayoutWrapper>
+    );
+  }
+
+  if (!testId || questions.length === 0) {
+    return (
+      <StudentLayoutWrapper pageTitle="Test">
+        <div style={{ padding: "20px", textAlign: "center" }}>
+          <Text>No questions available for this test</Text>
+        </div>
+      </StudentLayoutWrapper>
+    );
+  }
 
   return (
     <StudentLayoutWrapper pageTitle="Test">
       <div style={{ padding: "20px", textAlign: "center" }}>
         <Card style={{ border: "2px solid #FFD700", borderRadius: "10px" }}>
           <Title level={1} style={{ color: "#6A0DAD" }}>
-            REGULAR TEST
+            {selectedTest?.test_name || "TEST"}
           </Title>
           <div
             style={{
@@ -163,10 +335,13 @@ const TestScreen: React.FC = () => {
           <Title level={2} style={{ textAlign: "left" }}>
             {currentQuestionIndex + 1}. {currentQuestion.name}
           </Title>
-          <img
-            src={currentQuestion.image}
-            style={{ width: "100%", height: "200px" }}
-          />
+          {currentQuestion.image && (
+            <img
+              src={currentQuestion.image}
+              style={{ width: "100%", height: "200px", objectFit: "contain" }}
+              alt="Question visual"
+            />
+          )}
           <Radio.Group
             onChange={(e) =>
               setSelectedAnswers({
@@ -209,6 +384,7 @@ const TestScreen: React.FC = () => {
           onOk={handleModalOk}
           onCancel={handleModalOk}
           okText="OK"
+          width={800}
         >
           {testResult && (
             <Table
@@ -237,6 +413,7 @@ const TestScreen: React.FC = () => {
                 { title: "Result", dataIndex: "value", key: "value" },
               ]}
               pagination={false}
+              bordered
             />
           )}
         </Modal>

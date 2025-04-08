@@ -25,10 +25,7 @@ const Login = () => {
         password: values.password,
       };
 
-      const response = await axios.post(
-        Loginapi(),
-        payload
-      );
+      const response = await axios.post(Loginapi(), payload);
 
       if (response.data.token) {
         // Store token in localStorage
@@ -45,7 +42,15 @@ const Login = () => {
           values.password === "123456"
         ) {
           navigate("/dashboard");
-          return; 
+          return;
+        }
+
+        if (
+          values.username === "College@gmail.com" &&
+          values.password === "123456"
+        ) {
+          navigate("/college/dashboard");
+          return;
         }
 
         navigate("/student/dashboard");

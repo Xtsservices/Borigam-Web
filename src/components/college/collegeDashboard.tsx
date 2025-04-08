@@ -9,10 +9,9 @@ import {
   Form,
   message,
 } from "antd";
-import LayoutWrapper from "../layouts/layoutWrapper";
+import CollegeLayoutWrapper from "./layout/collegeLayoutWrapper";
 import { useNavigate } from "react-router-dom";
-import add_dashboard from "../assets/add_dashboard.png";
-
+import add_dashboard from "../../assets/add_dashboard.png";
 const { Title } = Typography;
 
 // Define TypeScript Interface for Course
@@ -52,12 +51,11 @@ interface Students {
   status: number;
 }
 
-
 interface UnassignedStudents {
   count: number;
 }
 
-const Dashboard = () => {
+const CollegeDashboard = () => {
   const navigate = useNavigate();
   const [, setCourses] = useState<Course[]>([]);
   const [colleges, setColleges] = useState<College[]>([]);
@@ -100,7 +98,6 @@ const Dashboard = () => {
         console.error("Error fetching courses:", error);
       }
     };
-
 
     fetchColleges();
     fetchCourses();
@@ -250,7 +247,6 @@ const Dashboard = () => {
     }
   };
 
-
   const handleCollegeClick = () => {
     setModalVisible(true);
   };
@@ -268,7 +264,7 @@ const Dashboard = () => {
   };
 
   return (
-    <LayoutWrapper pageTitle="BORIGAM">
+    <CollegeLayoutWrapper pageTitle="BORIGAM">
       <div
         style={{
           display: "flex",
@@ -493,12 +489,12 @@ const Dashboard = () => {
           >
             <Input />
           </Form.Item>
-          <Form.Item 
+          <Form.Item
             name="code"
             label="College Code"
             rules={[{ required: true, message: "Please enter college code" }]}
           >
-            <Input/>
+            <Input />
           </Form.Item>
           <Title level={5}>Contact Information</Title>
           <Form.Item
@@ -601,8 +597,8 @@ const Dashboard = () => {
           </Form.Item>
         </Form>
       </Modal>
-    </LayoutWrapper>
+    </CollegeLayoutWrapper>
   );
 };
 
-export default Dashboard;
+export default CollegeDashboard;

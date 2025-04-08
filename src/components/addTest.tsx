@@ -8,6 +8,7 @@ import {
   Modal,
   DatePicker,
   Form,
+  Tag,
 } from "antd";
 import LayoutWrapper from "../layouts/layoutWrapper";
 import { useNavigate } from "react-router-dom";
@@ -25,14 +26,13 @@ interface Question {
   name: string;
   start_date: string;
   options: OptionType[];
+  subject_id: number;
 }
 
-interface Subject {
+interface Course {
   id: number;
   name: string;
   status: string;
-  created_at: string;
-  updated_at: string;
 }
 
 interface Batch {
@@ -48,13 +48,15 @@ interface Batch {
 }
 
 const AddTest = () => {
-  const [questions, setQuestions] = useState<Question[]>([]);
-  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [allQuestions, setAllQuestions] = useState<Question[]>([]);
+  const [filteredQuestions, setFilteredQuestions] = useState<Question[]>([]);
+  const [courses, setCourses] = useState<Course[]>([]);
   const [batches, setBatches] = useState<Batch[]>([]);
+  const [filteredBatches, setFilteredBatches] = useState<Batch[]>([]);
   const [selectedQuestions, setSelectedQuestions] = useState<number[]>([]);
   const [testType, setTestType] = useState<string>("");
-  const [selectedSubject, setSelectedSubject] = useState<number | null>(null);
-  const [selectedBatch, setSelectedBatch] = useState<number | null>(null);
+  const [selectedCourse, setSelectedCourse] = useState<number | null>(null);
+  const [selectedBatches, setSelectedBatches] = useState<number[]>([]);
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -64,7 +66,7 @@ const AddTest = () => {
     const fetchQuestions = async () => {
       try {
         const response = await fetch(
-          "http://13.233.33.133:3001/api/question/getAllQuestions",
+          "http://localhost:3001/api/question/getAllQuestions",
           {
             headers: {
               "Content-Type": "application/json",
@@ -76,16 +78,17 @@ const AddTest = () => {
         if (!response.ok) throw new Error("Failed to fetch questions");
 
         const data = await response.json();
-        setQuestions(data.data);
+        setAllQuestions(data.data);
+        setFilteredQuestions(data.data); // Initially show all questions
       } catch (error) {
         console.error("Error fetching questions:", error);
       }
     };
 
-    const fetchSubjects = async () => {
+    const fetchCourses = async () => {
       try {
         const response = await fetch(
-          "http://13.233.33.133:3001/api/course/getSubjects",
+          "http://localhost:3001/api/course/getCourses",
           {
             headers: {
               "Content-Type": "application/json",
@@ -94,19 +97,19 @@ const AddTest = () => {
           }
         );
 
-        if (!response.ok) throw new Error("Failed to fetch subjects");
+        if (!response.ok) throw new Error("Failed to fetch courses");
 
         const data = await response.json();
-        setSubjects(data);
+        setCourses(data);
       } catch (error) {
-        console.error("Error fetching subjects:", error);
+        console.error("Error fetching courses:", error);
       }
     };
 
     const fetchBatches = async () => {
       try {
         const response = await fetch(
-          "http://13.233.33.133:3001/api/course/viewAllBatches",
+          "http://localhost:3001/api/course/viewAllBatches",
           {
             headers: {
               "Content-Type": "application/json",
@@ -119,15 +122,34 @@ const AddTest = () => {
 
         const data = await response.json();
         setBatches(data.data);
+        setFilteredBatches(data.data); // Initially show all batches
       } catch (error) {
         console.error("Error fetching batches:", error);
       }
     };
 
     fetchQuestions();
-    fetchSubjects();
+    fetchCourses();
     fetchBatches();
   }, []);
+
+  // Filter batches when course changes
+  useEffect(() => {
+    if (selectedCourse) {
+      const filtered = batches.filter(
+        (batch) => batch.course_id === selectedCourse
+      );
+      setFilteredBatches(filtered);
+      // Reset selected batches if they don't belong to the selected course
+      setSelectedBatches((prev) =>
+        prev.filter((batchId) =>
+          filtered.some((batch) => batch.batch_id === batchId)
+        )
+      ); // Added missing closing parenthesis here
+    } else {
+      setFilteredBatches(batches); // Show all batches if no course selected
+    }
+  }, [selectedCourse, batches]);
 
   const handleCheckboxChange = (questionId: number, checked: boolean) => {
     setSelectedQuestions((prev) =>
@@ -143,17 +165,21 @@ const AddTest = () => {
     return `${day}-${month}-${year}`;
   };
 
+  const handleBatchChange = (selectedBatchIds: number[]) => {
+    setSelectedBatches(selectedBatchIds);
+  };
+
   const handleSubmit = async () => {
     if (!testType) {
       message.error("Please select a test type");
       return;
     }
-    if (!selectedSubject) {
-      message.error("Please select a subject");
+    if (!selectedCourse) {
+      message.error("Please select a course");
       return;
     }
-    if (!selectedBatch) {
-      message.error("Please select a batch");
+    if (selectedBatches.length === 0) {
+      message.error("Please select at least one batch");
       return;
     }
     if (!startDate || !endDate) {
@@ -170,16 +196,16 @@ const AddTest = () => {
     const payload = {
       name: testType,
       duration,
-      subject_id: selectedSubject,
+      course_id: selectedCourse,
       questions: selectedQuestions,
-      batch_ids: [selectedBatch], // Changed to array format
+      batch_ids: selectedBatches,
       start_date: startDate,
       end_date: endDate,
     };
 
     try {
       const response = await fetch(
-        "http://13.233.33.133:3001/api/question/createTest",
+        "http://localhost:3001/api/question/createTest",
         {
           method: "POST",
           headers: {
@@ -233,31 +259,44 @@ const AddTest = () => {
             </Select>
           </Form.Item>
 
-          <Form.Item label="Select Subject:" required>
+          <Form.Item label="Select Course:" required>
             <Select
-              placeholder="Select Subject"
-              onChange={(value) => setSelectedSubject(Number(value))}
-              value={selectedSubject}
+              placeholder="Select Course"
+              onChange={(value) => setSelectedCourse(Number(value))}
+              value={selectedCourse}
               style={{ width: "100%", marginBottom: "20px" }}
             >
-              {Array.isArray(subjects) &&
-                subjects.map((subject) => (
-                  <Option key={subject.id} value={subject.id}>
-                    {subject.name}
+              {Array.isArray(courses) &&
+                courses.map((course) => (
+                  <Option key={course.id} value={course.id}>
+                    {course.name}
                   </Option>
                 ))}
             </Select>
           </Form.Item>
 
-          <Form.Item label="Select Batch:" required>
+          <Form.Item label="Select Batch(es):" required>
             <Select
-              placeholder="Select Batch"
-              onChange={(value) => setSelectedBatch(Number(value))}
-              value={selectedBatch}
+              mode="multiple"
+              placeholder="Select Batches"
+              onChange={handleBatchChange}
+              value={selectedBatches}
               style={{ width: "100%", marginBottom: "20px" }}
+              tagRender={({ label, value, closable, onClose }) => {
+                const batch = filteredBatches.find((b) => b.batch_id === value);
+                return (
+                  <Tag
+                    closable={closable}
+                    onClose={onClose}
+                    style={{ marginRight: 3 }}
+                  >
+                    {batch ? `${batch.name} (${batch.course_name})` : label}
+                  </Tag>
+                );
+              }}
             >
-              {Array.isArray(batches) &&
-                batches.map((batch) => (
+              {Array.isArray(filteredBatches) &&
+                filteredBatches.map((batch) => (
                   <Option key={batch.batch_id} value={batch.batch_id}>
                     {batch.name} ({batch.course_name})
                   </Option>
@@ -282,8 +321,10 @@ const AddTest = () => {
           </Form.Item>
 
           <h3 className="text-lg font-semibold mb-2">Select Questions:</h3>
-          {Array.isArray(questions) &&
-            questions.map((question) => (
+          {filteredQuestions.length === 0 ? (
+            <p>No questions available</p>
+          ) : (
+            filteredQuestions.map((question) => (
               <Card
                 key={question.id}
                 className="mb-4"
@@ -330,7 +371,8 @@ const AddTest = () => {
                     ))}
                 </Checkbox>
               </Card>
-            ))}
+            ))
+          )}
 
           <Button
             style={{ marginTop: "20px" }}

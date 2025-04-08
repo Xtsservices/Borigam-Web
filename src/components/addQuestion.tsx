@@ -14,14 +14,11 @@ import LayoutWrapper from "../layouts/layoutWrapper";
 const { Option } = Select;
 const { Text } = Typography;
 
-interface Subject {
+interface Course {
   id: number;
   name: string;
   status: string;
-  created_at: string;
-  updated_at: string;
 }
-
 
 // Utility function to format dates
 const formatDate = (dateString: string) => {
@@ -38,13 +35,10 @@ const formatDate = (dateString: string) => {
 };
 
 const AddQuestions = () => {
-  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [courses, setCourses] = useState<Course[]>([]);
   const questionTypes = ["radio"];
-
-  const [selectedSubject, setSelectedSubject] = useState<string>("");
-  const [selectedSubjectId, setSelectedSubjectId] = useState<number | null>(
-    null
-  );
+  const [selectedCourse, setSelectedCourse] = useState<string>("");
+  const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
   const [questionText, setQuestionText] = useState<string>("");
   const [questionType, setQuestionType] = useState<string>("");
   const [options, setOptions] = useState([
@@ -57,10 +51,11 @@ const AddQuestions = () => {
   const [imageFile, setImageFile] = useState<File | null>(null);
 
   useEffect(() => {
-    const fetchSubjects = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch(
-          "http://13.233.33.133:3001/api/course/getSubjects",
+        // Fetch courses
+        const coursesResponse = await fetch(
+          "http://localhost:3001/api/course/getCourses",
           {
             headers: {
               "Content-Type": "application/json",
@@ -69,17 +64,16 @@ const AddQuestions = () => {
           }
         );
 
-        if (!response.ok) throw new Error("Failed to fetch subjects");
-
-        const data = await response.json();
-        setSubjects(data);
+        if (!coursesResponse.ok) throw new Error("Failed to fetch courses");
+        const coursesData = await coursesResponse.json();
+        setCourses(coursesData);
       } catch (error) {
-        console.error("Error fetching subjects:", error);
-        message.error("Failed to load subjects");
+        console.error("Error fetching data:", error);
+        message.error("Failed to load data");
       }
     };
 
-    fetchSubjects();
+    fetchData();
   }, []);
 
   const handleOptionChange = (index: number, text: string) => {
@@ -95,7 +89,7 @@ const AddQuestions = () => {
   };
 
   const handleSubmit = async () => {
-    if (!questionText || !selectedSubjectId || !questionType) {
+    if (!questionText || !questionType || !selectedCourseId) {
       message.error("Please fill in all required fields.");
       return;
     }
@@ -103,7 +97,7 @@ const AddQuestions = () => {
     const formData = new FormData();
     formData.append("name", questionText);
     formData.append("type", questionType.toLowerCase().replace(" ", "_"));
-    formData.append("subject_id", selectedSubjectId.toString());
+    formData.append("course_id", selectedCourseId.toString());
     formData.append(
       "options",
       JSON.stringify(options.filter((opt) => opt.option_text.trim() !== ""))
@@ -115,7 +109,7 @@ const AddQuestions = () => {
 
     try {
       const response = await fetch(
-        "http://13.233.33.133:3001/api/question/createQuestion",
+        "http://localhost:3001/api/question/createQuestion",
         {
           method: "POST",
           headers: {
@@ -145,24 +139,24 @@ const AddQuestions = () => {
       <Card className="w-1/2 mx-auto p-6">
         <Form layout="vertical" onFinish={handleSubmit}>
           <Form.Item
-            label="Select Subject:"
-            name="subject"
+            label="Select Course:"
+            name="course"
             rules={[{ required: true }]}
           >
             <Select
               onChange={(value) => {
-                const selectedSubject = subjects.find(
-                  (sub) => sub.name === value
+                const selectedCourse = courses.find(
+                  (course) => course.name === value
                 );
-                setSelectedSubject(selectedSubject?.name || "");
-                setSelectedSubjectId(selectedSubject?.id || null);
+                setSelectedCourse(selectedCourse?.name || "");
+                setSelectedCourseId(selectedCourse?.id || null);
               }}
-              value={selectedSubject}
-              placeholder="Select Subject"
+              value={selectedCourse}
+              placeholder="Select Course"
             >
-              {subjects.map((subject) => (
-                <Option key={subject.id} value={subject.name}>
-                  {subject.name} (Created: {formatDate(subject.created_at)})
+              {courses.map((course) => (
+                <Option key={course.id} value={course.name}>
+                  {course.name}
                 </Option>
               ))}
             </Select>
@@ -236,16 +230,10 @@ const AddQuestions = () => {
         okText="OK"
       >
         <p>Question added successfully!</p>
-        {subjects.find((sub) => sub.id === selectedSubjectId) && (
-          <Text type="secondary">
-            Subject: {selectedSubject} (Last updated:{" "}
-            {formatDate(
-              subjects.find((sub) => sub.id === selectedSubjectId)
-                ?.updated_at || ""
-            )}
-            )
-          </Text>
+        {selectedCourse && (
+          <Text type="secondary">Course: {selectedCourse}</Text>
         )}
+        <br />
       </Modal>
     </LayoutWrapper>
   );
