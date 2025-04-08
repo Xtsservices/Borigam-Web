@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { Table, Button, Card, Row, Col, Spin, Alert } from "antd";
 import StudentLayoutWrapper from "./layouts/studentlayoutWrapper";
 import { useNavigate } from "react-router-dom";
-import { Modal, message } from "antd";
 
 interface StudentData {
   student_id: number;
@@ -36,8 +35,6 @@ const StudentDashboard: React.FC = () => {
   const [studentData, setStudentData] = useState<StudentData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [isModalVisible, setIsModalVisible] = useState(false);
-const [selectedTestId, setSelectedTestId] = useState<number | null>(null);
   const token = localStorage.getItem("token");
 
   useEffect(() => {

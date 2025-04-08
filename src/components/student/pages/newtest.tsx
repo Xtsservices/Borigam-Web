@@ -7,7 +7,6 @@ import {
   Modal,
   Table,
   message,
-  List,
   Row,
   Col,
   Space,

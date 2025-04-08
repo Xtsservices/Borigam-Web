@@ -48,7 +48,7 @@ interface Batch {
 }
 
 const AddTest = () => {
-  const [allQuestions, setAllQuestions] = useState<Question[]>([]);
+  const [, setAllQuestions] = useState<Question[]>([]);
   const [filteredQuestions, setFilteredQuestions] = useState<Question[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
   const [batches, setBatches] = useState<Batch[]>([]);
